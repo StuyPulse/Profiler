@@ -1,7 +1,8 @@
 
 public class Waypoint extends Point {
 	double time; //In seconds
-	double distance; //From the start point
+	double distanceFromStart; 
+	double distanceFromEnd; 
 	double velocity; 
 	double acceleration; 
 	double heading; //Counterclockwise and in radians 

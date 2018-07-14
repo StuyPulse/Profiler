@@ -1,13 +1,16 @@
 import java.util.ArrayList;
 
+
 public class Path {
 	ArrayList<Waypoint> trajectory;
 	
-	public Path(int numberOfPoints, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double maxVelocity, double maxAcceleration, Waypoint... waypoints) {
 		trajectory = new ArrayList<Waypoint>(); 
 		genBezierPath(numberOfPoints, 0.8, waypoints);
-		getDistances(); 
+		getDistancesFromStart(); 
+		getDistancesFromEnd(); 
 		getHeadings();
+		timeParameterize(maxVelocity, maxAcceleration);
 	}
 	
 	//Finds a point by using cubic bezier
@@ -54,15 +57,24 @@ public class Path {
 		}
 	}
 	
-	//Gets the distances from the start of each waypoint
+	//Gets the distances from the start, of each waypoint
 	//Requires that all the waypoints be generated already
-	void getDistances() {
+	void getDistancesFromStart() {
 		double distanceAccumlator = 0; 
-		trajectory.get(0).distance = distanceAccumlator;
+		trajectory.get(0).distanceFromStart = distanceAccumlator;
 		for(int i = 1; i < trajectory.size(); i++) {
 			double distance = trajectory.get(i).distanceTo(trajectory.get(i - 1));
 			distanceAccumlator += distance; 
-			trajectory.get(i).distance = distanceAccumlator; 
+			trajectory.get(i).distanceFromStart = distanceAccumlator; 
+		}
+	}
+	
+	//Gets the distances from the end, of each waypoint
+	//Requires that the distances from the start be calculated
+	void getDistancesFromEnd() {
+		double totalDistance = trajectory.get(trajectory.size() - 1).distanceFromStart; 
+		for(int i = 0; i < trajectory.size(); i++) {
+			trajectory.get(i).distanceFromEnd = totalDistance - trajectory.get(i).distanceFromStart;
 		}
 	}
 	
@@ -71,6 +83,34 @@ public class Path {
 	void getHeadings() {
 		for(int i = 0; i < trajectory.size() - 1; i++) {
 			trajectory.get(i).getHeading(trajectory.get(i + 1));
+		}
+	}
+	
+	//Gets the velocity and acceleration of the waypoints under a trapezodial motion profile
+	//Requires that the distances be found
+	/*
+	 * @param the max velocity that the robot should be at cruise 
+	 * @param the max acceleration that the robot should be when accelerating
+	 */
+	void timeParameterize(double maxVelocity, double maxAcceleration) {
+		for(int i = 0; i < trajectory.size(); i++) {
+			//Gets the velocity for the accelerating, cruise, and decelerating cases
+			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
+			double accelVel = Math.sqrt(2 * maxAcceleration * trajectory.get(i).distanceFromStart);
+			double cruiseVel = maxVelocity; 
+			double decelVel = Math.sqrt(2 * maxAcceleration * trajectory.get(i).distanceFromEnd);
+			
+			//Sets the velocity to the minium of these
+			if(accelVel < cruiseVel && accelVel < decelVel) {
+				trajectory.get(i).velocity = accelVel;  
+				trajectory.get(i).acceleration = maxAcceleration; 
+			}else if(cruiseVel < accelVel && cruiseVel < decelVel) {
+				trajectory.get(i).velocity = cruiseVel;  
+				trajectory.get(i).acceleration = 0; 
+			}else if(decelVel < accelVel && decelVel < cruiseVel) {
+				trajectory.get(i).velocity = decelVel;
+				trajectory.get(i).acceleration = -maxAcceleration; 
+			}
 		}
 	}
 }
