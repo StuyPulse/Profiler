@@ -7,7 +7,7 @@ public class Path {
 		trajectory = new ArrayList<Waypoint>(); 
 		genBezierPath(numberOfPoints, 0.8, waypoints);
 		getDistances(); 
-		getHeadings(); 
+		getHeadings();
 	}
 	
 	//Finds a point by using cubic bezier
@@ -45,11 +45,12 @@ public class Path {
 			Point control1 = startwp.offset(startOffset.x, startOffset.y);
 			Point control2 = endwp.offset(endOffset.x, endOffset.y);
 			
-			for(int j = 1; j <= numberOfPoints; j++) {
+			for(int j = 1; j < numberOfPoints; j++) {
 				double percentage = (double) j / (double) numberOfPoints;
 				Point pathPoint = cubicBezier(startwp, control1, control2, endwp, percentage); 
 				trajectory.add(new Waypoint(pathPoint.x, pathPoint.y));
 			}
+			trajectory.add(endwp);
 		}
 	}
 	
@@ -65,12 +66,11 @@ public class Path {
 		}
 	}
 	
-	//Gets the headings of each point counterclockwise and in radians
+	//Gets the headings of each waypoint
 	//Requires that all the waypoints be generated already
 	void getHeadings() {
-		for(int i = 1; i < trajectory.size(); i++) {
-			double headingDiff = trajectory.get(i - 1).angleBetween(trajectory.get(i));
-			trajectory.get(i).heading = headingDiff; 
+		for(int i = 0; i < trajectory.size() - 1; i++) {
+			trajectory.get(i).getHeading(trajectory.get(i + 1));
 		}
 	}
 }

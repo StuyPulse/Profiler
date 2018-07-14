@@ -22,27 +22,38 @@ public class Waypoint extends Point {
 		this.heading = heading; 
 	}
 	
-	//Finds the change in heading between the a point and another and returns in radians
+	//Gets the heading of the waypoint in a path counterclockwise and in radians
 	/*
-	 * @param another waypoint to find the angle between
+	 * @param another waypoint persumably the next one
 	 */
-	public double angleBetween(Waypoint waypoint) {
-		if(this.x == waypoint.x || this.y == waypoint.y) {
-			//Straight line case
-			return 0; 
-		}else {
-			double xDiff = waypoint.x - this.x; 
-			double yDiff = waypoint.y - this.y; 
+	void getHeading(Waypoint waypoint) {
+		double xDiff = waypoint.x - this.x; 
+		double yDiff = waypoint.y - this.y;
+		
+		if(waypoint.x >= this.x - 0.001 && waypoint.x <= this.x + 0.001) {
+			if(yDiff > 0) {
+				heading = Math.PI / 2;
+			}else if(yDiff < 0) {
+				heading = 3 * Math.PI / 2; 
+			}
+		}else if(waypoint.y >= this.y - 0.001 && waypoint.y <= this.y + 0.001) {
+			if(xDiff > 0) {
+				heading = 0; 
+			}else if(xDiff < 0) {
+				heading = Math.PI; 
+			}
+		}else {	
+			double opposite = Math.abs(waypoint.y - this.y);
+			double adjacent = Math.abs(waypoint.x - this.x);
 			
-			if((xDiff > 0 && yDiff > 0) || (xDiff < 0 && yDiff < 0)) {
-				//Going counterclockwise
-				return Math.atan(Math.abs(yDiff) / Math.abs(xDiff)); 
-			}else if((xDiff > 0 && yDiff < 0) || (xDiff < 0 && yDiff > 0)) {
-				//Going clockwise
-				return -Math.atan(Math.abs(yDiff) / Math.abs(xDiff));
-			}else {
-				//Not moving
-				return 0;
+			if(xDiff > 0 && yDiff > 0) {
+				heading = Math.atan(opposite / adjacent);
+			}else if(xDiff < 0 && yDiff < 0) {
+				heading = Math.PI + Math.atan(opposite / adjacent);
+			}else if(xDiff < 0 && yDiff > 0) {
+				heading = Math.PI - Math.atan(opposite / adjacent);
+			}else if(xDiff > 0 && yDiff < 0) {
+				heading = 2 * Math.PI - Math.atan(opposite / adjacent);
 			}
 		}
 	}
