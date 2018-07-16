@@ -4,13 +4,15 @@ import java.util.ArrayList;
 public class Path {
 	ArrayList<Waypoint> trajectory;
 	
-	public Path(int numberOfPoints, double maxVelocity, double maxAcceleration, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		trajectory = new ArrayList<Waypoint>(); 
 		genBezierPath(numberOfPoints, 0.8, waypoints);
 		getDistancesFromStart(); 
 		getDistancesFromEnd(); 
 		getHeadings();
 		timeParameterize(maxVelocity, maxAcceleration);
+		getTimes();
+		getJerks(maxJerk); //60 ft/sec^3 best for trapezodial motion profile  
 	}
 	
 	//Finds a point by using cubic bezier
@@ -112,5 +114,36 @@ public class Path {
 				trajectory.get(i).acceleration = -maxAcceleration; 
 			}
 		}
+	}
+	
+	//Gets the time by which it will take the robot to be at that point
+	//Requires that the distances and velocities be found
+	void getTimes() {
+		double timeAccumlator = 0; 
+		trajectory.get(0).time = timeAccumlator; 
+		for(int i = 1; i < trajectory.size(); i++) {
+			double distanceTraveled = trajectory.get(i).distanceFromStart - trajectory.get(i - 1).distanceFromStart;
+			double avgVelocity = (trajectory.get(i).velocity + trajectory.get(i - 1).velocity) / 2; 
+			double timeElapsed = distanceTraveled / avgVelocity;
+			timeAccumlator += timeElapsed; 
+			trajectory.get(i).time = timeAccumlator; 
+		}
+	}
+	
+	//Gets the jerk of each waypoint
+	//Requires that accelerations and times be calculated
+	void getJerks(double maxJerk) {
+		for(int i = 0; i < trajectory.size() - 1; i++) {
+			double accelerationChange = trajectory.get(i + 1).acceleration - trajectory.get(i).acceleration; 
+			double timeElapsed = trajectory.get(i + 1).time - trajectory.get(i).time; 
+			double jerk = accelerationChange / timeElapsed; 
+			if(jerk > maxJerk) { 
+				jerk = maxJerk; 
+			}else if(jerk < -maxJerk) {
+				jerk = -maxJerk; 
+			}
+			trajectory.get(i).jerk = jerk; 
+		}
+		trajectory.get(trajectory.size() - 1).jerk = 0; 
 	}
 }

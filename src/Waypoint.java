@@ -1,10 +1,12 @@
 
 public class Waypoint extends Point {
-	double time; //In seconds
+	//Universal units so longs as you are consistent
+	double time;
 	double distanceFromStart; 
 	double distanceFromEnd; 
 	double velocity; 
 	double acceleration; 
+	double jerk;  
 	double heading; //Counterclockwise and in radians 
 	
 	public Waypoint(double x, double y) {
