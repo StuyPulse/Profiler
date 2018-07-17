@@ -2,17 +2,27 @@ import java.util.ArrayList;
 
 
 public class Path {
-	ArrayList<Waypoint> trajectory;
+	//Trajectory contains all the calculated points while waypoints are just the points the user provided
+	//Notice that the waypoints of the path cannot be changed after they are set
+	ArrayList<Waypoint> trajectory; 
+	double totalDistance; 
+	double totalTime; 
+	double maxVelocity; 
+	double maxAcceleration; 
+	double maxJerk;  
 	
-	public Path(int numberOfPoints, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) { 
+		this.maxVelocity = maxVelocity; 
+		this.maxAcceleration = maxAcceleration; 
+		this.maxJerk = maxJerk; 
 		trajectory = new ArrayList<Waypoint>(); 
 		genBezierPath(numberOfPoints, 0.8, waypoints);
 		getDistancesFromStart(); 
 		getDistancesFromEnd(); 
 		getHeadings();
-		timeParameterize(maxVelocity, maxAcceleration);
+		timeParameterize(this.maxVelocity, this.maxAcceleration);
 		getTimes();
-		getJerks(maxJerk); //60 ft/sec^3 best for trapezodial motion profile  
+		getJerks(this.maxJerk); //60 ft/sec^3 best for trapezodial motion profile
 	}
 	
 	//Finds a point by using cubic bezier
@@ -40,6 +50,7 @@ public class Path {
 	 */
 	void genBezierPath(int numberOfPoints, double tightness, Waypoint... waypoints) {
 		trajectory.add(waypoints[0]);
+		trajectory.get(0).isPathPoint = true; 
 		for(int i = 0; i < waypoints.length - 1; i++) {
 			Waypoint startwp = waypoints[i]; 
 			Waypoint endwp = waypoints[i + 1];
@@ -56,6 +67,8 @@ public class Path {
 				trajectory.add(new Waypoint(pathPoint.x, pathPoint.y));
 			}
 			trajectory.add(endwp);
+			//The latest added point which is a path point is true
+			trajectory.get(trajectory.size() - 1).isPathPoint = true; 
 		}
 	}
 	
@@ -69,6 +82,7 @@ public class Path {
 			distanceAccumlator += distance; 
 			trajectory.get(i).distanceFromStart = distanceAccumlator; 
 		}
+		totalDistance = trajectory.get(trajectory.size() - 1).distanceFromStart; 
 	}
 	
 	//Gets the distances from the end, of each waypoint
@@ -128,6 +142,7 @@ public class Path {
 			timeAccumlator += timeElapsed; 
 			trajectory.get(i).time = timeAccumlator; 
 		}
+		totalTime = trajectory.get(trajectory.size() - 1).time; 
 	}
 	
 	//Gets the jerk of each waypoint

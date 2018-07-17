@@ -8,6 +8,7 @@ public class Waypoint extends Point {
 	double acceleration; 
 	double jerk;  
 	double heading; //Counterclockwise and in radians 
+	boolean isPathPoint; 
 	
 	public Waypoint(double x, double y) {
 		super(x, y); 
