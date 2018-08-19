@@ -4,10 +4,12 @@ public class Waypoint extends Point {
 	double time;
 	double distanceFromStart; 
 	double distanceFromEnd; 
+	double distanceFromLast; 
 	double velocity; 
 	double acceleration; 
 	double jerk;  
-	double heading; //Counterclockwise and in radians 
+	double heading; //Counterclockwise and in radians
+	double angularVelocity;  
 	boolean isPathPoint; 
 	
 	public Waypoint(double x, double y) {
