@@ -4,7 +4,6 @@ public class Waypoint extends Point {
 	double time;
 	double distanceFromStart; 
 	double distanceFromEnd; 
-	double distanceFromLast; 
 	double velocity; 
 	double acceleration; 
 	double jerk;  

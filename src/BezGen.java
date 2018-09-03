@@ -14,9 +14,9 @@ public class BezGen {
 				//Examples
 
 				//Going fowards
-				/*new Waypoint(5, 3, 0), 
+				new Waypoint(5, 3, 0), 
 				new Waypoint(10, 6, d2r(45)), 
-				new Waypoint(15, 9, 0)*/
+				new Waypoint(15, 9, 0)
 
 				//Going Backwards
 				/*new Waypoint(15, 9, d2r(180)),
