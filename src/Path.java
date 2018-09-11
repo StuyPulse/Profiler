@@ -20,12 +20,13 @@ public class Path {
 	Waypoint[][] leftCurve, rightCurve;  
 	
 	//Enter information for the center of the robot 
-	public Path(int numberOfPoints, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		if(waypoints.length < 2) {
 			System.out.println("Not enough points");
 			System.exit(0);
 		} 
 		this.numberOfPoints = numberOfPoints;
+		this.dt = dt; 
 		this.wheelBaseWidth = wheelBaseWidth; 
 		this.maxVelocity = maxVelocity; 
 		this.maxAcceleration = maxAcceleration; 
@@ -138,8 +139,10 @@ public class Path {
 	
 	//Gets the velocity and acceleration of the curvepoints under a trapezodial motion profile for the central path
 	//Requires that the distances be found
-	private void timeParameterize() {
-		for(int i = 0; i < centralTrajectory.size(); i++) {
+	//To do velocity corrections angular velocities must be found
+	private void getVelocities() {
+		double maxVelocity = this.maxVelocity; 
+		for(int i = 0; i < centralTrajectory.size(); i++) { 
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
 			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
 			double accelVel = Math.sqrt(2 * maxAcceleration * centralTrajectory.get(i).distanceFromStart);
@@ -149,31 +152,12 @@ public class Path {
 			//Sets the velocity to the minium of these
 			if(accelVel < cruiseVel && accelVel < decelVel) {
 				centralTrajectory.get(i).velocity = accelVel;  
-				centralTrajectory.get(i).acceleration = maxAcceleration; 
 			}else if(cruiseVel < accelVel && cruiseVel < decelVel) {
 				centralTrajectory.get(i).velocity = cruiseVel;  
-				centralTrajectory.get(i).acceleration = 0; 
 			}else if(decelVel < accelVel && decelVel < cruiseVel) {
 				centralTrajectory.get(i).velocity = decelVel;
-				centralTrajectory.get(i).acceleration = -maxAcceleration; 
-			}
+			} 
 		}
-
-		centralTrajectory.get(0).acceleration = maxAcceleration;
-		for(int i = 1; i < centralTrajectory.size(); i++) {
-			double velocityDiff = centralTrajectory.get(i).velocity - centralTrajectory.get(i - 1).velocity;
-			if(velocityDiff == 0) {
-				centralTrajectory.get(i).acceleration = 0; 
-				continue; 
-			} 
-			double timeDiff = centralTrajectory.get(i).time - centralTrajectory.get(i - 1).time; 
-			centralTrajectory.get(i).acceleration = velocityDiff / timeDiff;
-			if(centralTrajectory.get(i).acceleration > maxAcceleration) {
-				centralTrajectory.get(i).acceleration = maxAcceleration; 
-			}else if(centralTrajectory.get(i).acceleration < -maxAcceleration) {
-				centralTrajectory.get(i).acceleration = -maxAcceleration;
-			} 
-		} 
 	}
 	
 	//Gets the time by which it will take the robot to be at that point
@@ -189,6 +173,26 @@ public class Path {
 			trajectory.get(i).time = timeAccumlator; 
 		}
 		totalTime = trajectory.get(trajectory.size() - 1).time; 
+	}
+
+	//Gets the accelerations for the central path
+	//Requires that velocities and times be found
+	private void getAccelerations() {
+		centralTrajectory.get(0).acceleration = maxAcceleration;
+		for(int i = 1; i < centralTrajectory.size(); i++) {
+			double velocityDiff = centralTrajectory.get(i).velocity - centralTrajectory.get(i - 1).velocity;
+			if(velocityDiff == 0) {
+				centralTrajectory.get(i).acceleration = 0; 
+				continue; 
+			} 
+			double timeDiff = centralTrajectory.get(i).time - centralTrajectory.get(i - 1).time; 
+			centralTrajectory.get(i).acceleration = velocityDiff / timeDiff;
+			if(centralTrajectory.get(i).acceleration > maxAcceleration) {
+				centralTrajectory.get(i).acceleration = maxAcceleration; 
+			}else if(centralTrajectory.get(i).acceleration < -maxAcceleration) {
+				centralTrajectory.get(i).acceleration = -maxAcceleration;
+			} 
+		} 
 	}
 	
 	//Gets the jerk of each waypoint
@@ -226,8 +230,9 @@ public class Path {
 		getDistancesFromStart(centralTrajectory); 
 		getDistancesFromEnd(centralTrajectory); 
 		getHeadings(centralTrajectory);
-		timeParameterize();
+		getVelocities();
 		getTimes(centralTrajectory);
+		getAccelerations();  
 		getAngularVelocities(centralTrajectory);
 		getJerks(); //60 ft/sec^3 best for trapezodial motion profile
 	}

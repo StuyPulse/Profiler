@@ -8,38 +8,29 @@ import java.util.ArrayList;
 
 public class BezGen {
 	public static void main(String[] args) {
-		//Insert waypoints here
-		//use the method d2r() if you are giving headings in degrees
-		Waypoint[] waypoints = {
-				//Examples
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("First lets do some file stuff"); 
+		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
+		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
 
-				//Going fowards
-				new Waypoint(5, 3, 0), 
-				new Waypoint(10, 6, d2r(45)), 
-				new Waypoint(15, 9, 0)
+		System.out.println("First enter some information"); 
+		System.out.print("dt: "); double dt = scanner.nextDouble(); 
+		System.out.print("Wheel Base Width: "); double wheelBase = scanner.nextDouble(); 
+		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
+		System.out.print("Max Acceleration: "); double maxAcceleration = scanner.nextDouble(); 
+		System.out.print("Max Jerk (hint-60ft/sec^3): "); double maxJerk = scanner.nextDouble();
 
-				//Going Backwards
-				/*new Waypoint(15, 9, d2r(180)),
-				new Waypoint(10, 6, d2r(225)), 
-				new Waypoint(5, 3, d2r(180))*/
-
-				//Changing orientation in the path
-				//DOSEN'T WORK!
-				/*new Waypoint(5, 5, 0), 
-				new Waypoint(10, 10, d2r(90)), 
-				new Waypoint(5, 15, d2r(180))*/
-		}; 
-		//In the constructor define properties of the curve 
-		//sample rate, wheel base width, max velocity, max acceleration, max jerk, and the waypoints that were defined in the previous array
-		//look at the class for more details
-		Path path = new Path(100, 1.936, 4.0, 3.0, 60.0, waypoints);
-		
-		Scanner scanner = new Scanner(System.in); 
-		System.out.println("File Destination: ");
-		String fileLocation = scanner.nextLine();
-		System.out.println("Trajectory Name: ");
-		String trajName = scanner.nextLine();
+		System.out.print("Next the waypoints\n"
+							+ "Number of waypoints: ");
+		int numOfWaypoints = scanner.nextInt(); 
+		System.out.println("Add waypoints like so: x(units) y(units) theta(degrees)");
+		Waypoint[] waypoints = new Waypoint[numOfWaypoints];
+		for(int i = 0; i < waypoints.length; i++) {
+			waypoints[i] = new Waypoint(scanner.nextDouble(), scanner.nextDouble(), d2r(scanner.nextDouble())); 
+		}   
 		scanner.close();
+
+		Path path = new Path(100, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
 		String central = fileLocation + "\\" + trajName + "_central.csv";
 		String left = fileLocation + "\\" + trajName + "_left.csv";
 		String right = fileLocation + "\\" + trajName + "_right.csv";
