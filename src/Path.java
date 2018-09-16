@@ -17,6 +17,7 @@ public class Path {
 	double maxJerk;
 	double wheelBaseWidth; //The offset for the paths is half the wheel base width
 	ArrayList<Waypoint> leftTrajectory, rightTrajectory; 
+	Waypoint[] leftWaypoints, rightWaypoints; 
 	Waypoint[][] leftCurve, rightCurve;  
 	
 	//Enter information for the center of the robot 
@@ -32,12 +33,14 @@ public class Path {
 		this.maxAcceleration = maxAcceleration; 
 		this.maxJerk = maxJerk; 
 		this.waypoints = waypoints; 
-		this.curvepoints = new Waypoint[waypoints.length - 1][4];  
+		this.curvepoints = new Waypoint[waypoints.length - 1][4]; 
+		leftCurve = new Waypoint[waypoints.length - 1][4]; rightCurve = new Waypoint[waypoints.length - 1][4];  
 		centralTrajectory = new ArrayList<Waypoint>();
-		leftTrajectory = new ArrayList<Waypoint>();
-		rightTrajectory = new ArrayList<Waypoint>();
+		leftTrajectory = new ArrayList<Waypoint>(); rightTrajectory = new ArrayList<Waypoint>();
+		findPaths(); 
 		findCentralTrajectory();
 		findSideTrajectories();
+		//parameterizeTrajectories();
 	}
 
 	//Finds a point by using cubic bezier
@@ -61,11 +64,12 @@ public class Path {
 	/*
 	 * @param the number of points between each pair of waypoints
 	 * @param the tightness of the curve
+	 * @param the trajectory on which to load the points
+	 * @param the array on which to load the curvepoints
 	 * @param the waypoints from which the path with be generated
 	 */
-	private void genBezierPath(int numberOfPoints, double tightness, ArrayList<Waypoint> trajectory, Waypoint... waypoints) {
+	private void genBezierPath(int numberOfPoints, double tightness, ArrayList<Waypoint> trajectory, Waypoint[][] curvepoints, Waypoint... waypoints) {
 		trajectory.add(waypoints[0]);
-		trajectory.get(0).isPathPoint = true;
 		for(int i = 0; i < waypoints.length - 1; i++) {
 			Waypoint startwp = waypoints[i]; 
 			Waypoint endwp = waypoints[i + 1];
@@ -76,10 +80,10 @@ public class Path {
 			Point control1 = startwp.offset(startOffset.x, startOffset.y);
 			Point control2 = endwp.offset(endOffset.x, endOffset.y);
 			
-			this.curvepoints[i][0] = startwp; 
-			this.curvepoints[i][1] = control1.toWaypoint();
-			this.curvepoints[i][2] = control2.toWaypoint();
-			this.curvepoints[i][3] = endwp;  
+			curvepoints[i][0] = startwp; 
+			curvepoints[i][1] = control1.toWaypoint();
+			curvepoints[i][2] = control2.toWaypoint();
+			curvepoints[i][3] = endwp;  
 			for(int j = 1; j < numberOfPoints; j++) {
 				double percentage = (double) j / (double) numberOfPoints;
 				Point pathPoint = cubicBezier(startwp, control1, control2, endwp, percentage); 
@@ -87,26 +91,50 @@ public class Path {
 			}
 			trajectory.add(endwp);
 			//The latest added point which is a path point is true
-			trajectory.get(trajectory.size() - 1).isPathPoint = true; 
 		}
 	}
 
-	//Generates a Bezier Path from given curvepoints including the control points
-	/*
-	 * @param the prespecified curvepoints
-	 */
-	private void genBezierPath(Waypoint[][] curvepoints, ArrayList<Waypoint> trajectory) { 
-		trajectory.add(curvepoints[0][0]); 
-		for(int i = 0; i < curvepoints.length; i++) { 
-			for(int j = 1; j < numberOfPoints; j++) {
-				double percentage = (double) j / (double) numberOfPoints; 
-				Point pathPoint = cubicBezier(curvepoints[i][0], curvepoints[i][1], curvepoints[i][2], curvepoints[i][3], percentage); 
-				trajectory.add(pathPoint.toWaypoint()); 
-			}
-			trajectory.add(curvepoints[i][3]);
-		}	
+	private Waypoint[] getOffsetWaypoints(double offset) {
+		if(this.waypoints.length < 1) {
+			System.out.println("Not enough points"); 
+			return this.waypoints; 
+		}
+
+		Waypoint[] waypoints = new Waypoint[this.waypoints.length]; 
+		double change = 0.1; 
+		if(offset < 0) {
+			change *= -1; 
+		}else if(offset == 0) {
+			return this.waypoints; 
+		}
+		double accuracy = 0.3; 
+		Orientation orientation; 
+		Orientation last = Orientation.findOrientation(curvepoints[0][3].heading); 
+
+		for(int i = 0; i < curvepoints.length; i++) {
+			orientation = Orientation.findOrientation(curvepoints[i][3].heading);
+			if(orientation == last) {
+				Point pointA = curvepoints[i][0].offsetPerpendicular(curvepoints[i][1], offset, change, accuracy, orientation);
+				waypoints[i] = new Waypoint(pointA.x, pointA.y, this.waypoints[i].heading);
+			} 
+			Point pointB = curvepoints[i][3].offsetPerpendicular(curvepoints[i][2], offset, change, accuracy, orientation);
+			waypoints[i + 1] = new Waypoint(pointB.x, pointB.y, this.waypoints[i + 1].heading); 
+			last = orientation; 
+		}
+
+		return waypoints; 
 	}
-	
+
+	//Finds the paths not the trajectories 
+	//That means only positions
+	public void findPaths() {
+		genBezierPath(numberOfPoints, 0.8, centralTrajectory, curvepoints, waypoints);
+		
+		double offset = wheelBaseWidth / 2; 
+		leftWaypoints = getOffsetWaypoints(-offset); rightWaypoints = getOffsetWaypoints(offset);
+		genBezierPath(numberOfPoints, 0.8, leftTrajectory, leftCurve, leftWaypoints); genBezierPath(numberOfPoints, 0.8, rightTrajectory, rightCurve, rightWaypoints);
+	}
+
 	//Gets the distances from the start, of each waypoint
 	//Requires that all the curvepoints be generated already
 	private void getDistancesFromStart(ArrayList<Waypoint> trajectory) {
@@ -141,7 +169,6 @@ public class Path {
 	//Requires that the distances be found
 	//To do velocity corrections angular velocities must be found
 	private void getVelocities() {
-		double maxVelocity = this.maxVelocity; 
 		for(int i = 0; i < centralTrajectory.size(); i++) { 
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
 			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
@@ -225,8 +252,8 @@ public class Path {
 	}
 
 	//Finds the trajectory of the center of the robot 
+	//Paths must be made first
 	public void findCentralTrajectory() {
-		genBezierPath(numberOfPoints, 0.8, centralTrajectory, waypoints);
 		getDistancesFromStart(centralTrajectory); 
 		getDistancesFromEnd(centralTrajectory); 
 		getHeadings(centralTrajectory);
@@ -235,58 +262,6 @@ public class Path {
 		getAccelerations();  
 		getAngularVelocities(centralTrajectory);
 		getJerks(); //60 ft/sec^3 best for trapezodial motion profile
-	}
-
-	//Offsets the points of the curve
-	/*
-	 * @param the distance that the point should be offseted in the perpendicular orienation
-	 */
-	private Waypoint[][] getOffsetPathPoints(double offset) {
-		if(curvepoints.length < 1) {
-			return this.curvepoints; 
-		}
-		Waypoint[][] curvepoints = new Waypoint[this.curvepoints.length][4];
-		double change = 0.1; 
-		if(offset < 0) {
-			change *= -1;
-		}else if(offset == 0) { 
-			return this.curvepoints; 
-		}
-		double accuracy = 0.3;
-		Orientation orientation;     
-		for(int i = 0; i < curvepoints.length; i++) { 
-			orientation = Orientation.findOrientation(this.curvepoints[i][3].heading); 
-			for(int j = 0; j < curvepoints[i].length; j ++) {
-				if(j == 0) {
-					Point point = this.curvepoints[i][j].offsetPerpendicular(this.curvepoints[i][j + 1], offset, change, accuracy, orientation); 
-					curvepoints[i][j] = new Waypoint(point.x, point.y, this.curvepoints[i][j].heading);  
-				}else if(j == curvepoints[i].length - 1) {
-					Point point = this.curvepoints[i][j].offsetPerpendicular(this.curvepoints[i][j - 1], offset, change, accuracy, orientation);
-					curvepoints[i][j] = new Waypoint(point.x, point.y, this.curvepoints[i][j].heading);
-				}else {
-					Point pointOffset1 = this.curvepoints[i][j].offsetPerpendicular(this.curvepoints[i][j - 1], offset, change, accuracy, orientation); 
-					Point otherOffset1 = this.curvepoints[i][j - 1].offsetPerpendicular(this.curvepoints[i][j], offset, change, accuracy, orientation);
-					Point pointOffset2 = this.curvepoints[i][j].offsetPerpendicular(this.curvepoints[i][j + 1], offset, change, accuracy, orientation);
-					Point otherOffset2 = this.curvepoints[i][j + 1].offsetPerpendicular(this.curvepoints[i][j], offset, change, accuracy, orientation);
-					double[] equation1 = pointOffset1.linearEquation(otherOffset1); 
-					double[] equation2 = pointOffset2.linearEquation(otherOffset2);
-					double[] pointCoordinates = MatrixMath.solveLinearSystem(equation1, equation2);
-					if(Double.isNaN(pointCoordinates[0]) || Double.isNaN(pointCoordinates[1])) {
-						Point point = pointOffset1.avgPoint(pointOffset2);
-						if(Double.isNaN(pointCoordinates[0]) && Double.isNaN(pointCoordinates[1])) {
-							curvepoints[i][j] = point.toWaypoint(); 
-						}else if(Double.isNaN(pointCoordinates[0])) {
-							curvepoints[i][j] = new Waypoint(point.x, pointCoordinates[1]); 
-						}else {
-							curvepoints[i][j] = new Waypoint(pointCoordinates[0], point.y); 
-						} 
-					}else { 
-						curvepoints[i][j] = new Waypoint(pointCoordinates[0], pointCoordinates[1]);
-					}
-				}
-			}
-		}
-		return curvepoints;  
 	}
 
 	//Copies the headings from the central trajectory to the side
@@ -356,10 +331,8 @@ public class Path {
 	}
 
 	//Finds the trajectories for the sides of the robot 
-	public void findSideTrajectories() {
-		double offset = wheelBaseWidth / 2; 
-		leftCurve = getOffsetPathPoints(-offset); rightCurve = getOffsetPathPoints(offset);
-		genBezierPath(leftCurve, leftTrajectory); genBezierPath(rightCurve, rightTrajectory); 
+	//Paths must be made first
+	public void findSideTrajectories() { 
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
 		copyHeadings(leftTrajectory); copyHeadings(rightTrajectory);
@@ -367,5 +340,46 @@ public class Path {
 		getTimes(leftTrajectory); getTimes(rightTrajectory);
 		getSideAccelerations(leftTrajectory); getSideAccelerations(rightTrajectory);
 		getSideJerks(leftTrajectory); getSideJerks(rightTrajectory);   
+	}
+
+	private void timeParameterize(ArrayList<Waypoint> trajectory, Waypoint[][] curvepoints) {
+		ArrayList<Waypoint> copy = new ArrayList<Waypoint>(); 
+		for(int i = 0; i < trajectory.size(); i++) {
+			copy.add(trajectory.get(i)); 
+		}
+		trajectory.clear();
+		double totalTime = copy.get(copy.size() - 1).time;
+		int index = 0;  
+		double percentage = 0;
+		int curve;  
+		for(double time = 0; time <= totalTime; time += dt) {
+			for(int i = index; i < copy.size() - 1; i++) { 
+				if(time == copy.get(i).time) {
+					index = i;
+					percentage = (double) i / (double) numberOfPoints;   
+					break; 
+				}else if(copy.get(i).time < time && copy.get(i + 1).time > time) {
+					index = i; 
+					double timeDifference = copy.get(i + 1).time - copy.get(i).time; 
+					double timeNeeded = time - copy.get(i).time;
+					double percentNeeded = timeNeeded / timeDifference;
+					percentage = (double) (i + percentNeeded) / (double) numberOfPoints; 
+					break;   
+				}
+			}
+			curve = index % numberOfPoints;
+			if(curve >= curvepoints.length) break; 
+			System.out.println(curve + "-" + percentage);  
+			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage).toWaypoint();
+			trajectory.add(point); 
+		}
+	}
+
+	public void parameterizeTrajectories() {
+		timeParameterize(centralTrajectory, curvepoints);
+		findCentralTrajectory();
+		timeParameterize(leftTrajectory, leftCurve);
+		timeParameterize(rightTrajectory, rightCurve);
+		findSideTrajectories();
 	}
 }

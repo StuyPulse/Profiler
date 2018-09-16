@@ -10,7 +10,7 @@ enum Orientation {
     }
 
     private static boolean isBackwards(double heading) {
-        if(heading > Math.PI && heading <= (3 * Math.PI) / 2) {
+        if(heading > Math.PI / 2 && heading <= (3 * Math.PI) / 2) {
             return true; 
         }else {
             return false; 

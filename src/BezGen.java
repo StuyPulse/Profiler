@@ -13,14 +13,14 @@ public class BezGen {
 		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
 		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
 
-		System.out.println("First enter some information"); 
+		System.out.println("Next enter some information"); 
 		System.out.print("dt: "); double dt = scanner.nextDouble(); 
 		System.out.print("Wheel Base Width: "); double wheelBase = scanner.nextDouble(); 
 		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
 		System.out.print("Max Acceleration: "); double maxAcceleration = scanner.nextDouble(); 
 		System.out.print("Max Jerk (hint-60ft/sec^3): "); double maxJerk = scanner.nextDouble();
 
-		System.out.print("Next the waypoints\n"
+		System.out.print("Finally the waypoints\n"
 							+ "Number of waypoints: ");
 		int numOfWaypoints = scanner.nextInt(); 
 		System.out.println("Add waypoints like so: x(units) y(units) theta(degrees)");

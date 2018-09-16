@@ -122,6 +122,12 @@ public class Point {
 			}else if(orientation == Orientation.BACKWARDS) {
 				return new Point(x, y + offset);
 			}
+		}else if(Math.abs(this.x - otherPoint.x) > -1 && Math.abs(this.x - otherPoint.x) < 1) {
+			if(orientation == Orientation.FOWARDS) {
+				return new Point(x + offset, y); 
+			}else {
+				return new Point(x - offset, y); 
+			}
 		}
 		if(orientation == Orientation.BACKWARDS) {
 			change *= -1; 
