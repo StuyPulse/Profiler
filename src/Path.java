@@ -94,34 +94,17 @@ public class Path {
 		}
 	}
 
+	//Gets a set of points that are the offset waypoints 
 	private Waypoint[] getOffsetWaypoints(double offset) {
 		if(this.waypoints.length < 1) {
 			System.out.println("Not enough points"); 
 			return this.waypoints; 
 		}
 
-		Waypoint[] waypoints = new Waypoint[this.waypoints.length]; 
-		double change = 0.1; 
-		if(offset < 0) {
-			change *= -1; 
-		}else if(offset == 0) {
-			return this.waypoints; 
+		Waypoint[] waypoints = new Waypoint[this.waypoints.length];
+		for(int i = 0; i < this.waypoints.length; i++) {
+			waypoints[i] = this.waypoints[i].offsetWaypointPerpen(offset); 
 		}
-		double accuracy = 0.3; 
-		Orientation orientation; 
-		Orientation last = Orientation.findOrientation(curvepoints[0][3].heading); 
-
-		for(int i = 0; i < curvepoints.length; i++) {
-			orientation = Orientation.findOrientation(curvepoints[i][3].heading);
-			if(orientation == last) {
-				Point pointA = curvepoints[i][0].offsetPerpendicular(curvepoints[i][1], offset, change, accuracy, orientation);
-				waypoints[i] = new Waypoint(pointA.x, pointA.y, this.waypoints[i].heading);
-			} 
-			Point pointB = curvepoints[i][3].offsetPerpendicular(curvepoints[i][2], offset, change, accuracy, orientation);
-			waypoints[i + 1] = new Waypoint(pointB.x, pointB.y, this.waypoints[i + 1].heading); 
-			last = orientation; 
-		}
-
 		return waypoints; 
 	}
 
@@ -131,7 +114,7 @@ public class Path {
 		genBezierPath(numberOfPoints, 0.8, centralTrajectory, curvepoints, waypoints);
 		
 		double offset = wheelBaseWidth / 2; 
-		leftWaypoints = getOffsetWaypoints(-offset); rightWaypoints = getOffsetWaypoints(offset);
+		leftWaypoints = getOffsetWaypoints(offset); rightWaypoints = getOffsetWaypoints(-offset); 
 		genBezierPath(numberOfPoints, 0.8, leftTrajectory, leftCurve, leftWaypoints); genBezierPath(numberOfPoints, 0.8, rightTrajectory, rightCurve, rightWaypoints);
 	}
 
@@ -265,9 +248,6 @@ public class Path {
 	}
 
 	//Copies the headings from the central trajectory to the side
-	/*
-	 *@param the side trajectory on which to copy the headings onto
-	 */
 	private void copyHeadings(ArrayList<Waypoint> side) {
 		for(int i = 0; i < centralTrajectory.size() && i < side.size(); i++) { 
 			side.get(i).heading = centralTrajectory.get(i).heading; 
@@ -300,9 +280,6 @@ public class Path {
 
 	//Finds the side accelerations
 	//Difference between this and the central is that it ignores the maximum acceleration
-	/*
-	 *@param the side trajectory
-	 */
 	private void getSideAccelerations(ArrayList<Waypoint> side) {
 		double velocityDiffI = side.get(1).velocity - side.get(0).velocity;
 		double timeDiffI = side.get(1).time - side.get(0).time;  
@@ -316,9 +293,6 @@ public class Path {
 
 	//Finds the side Jerks
 	//Difference between this and the central is that it ignores the maximum jerk
-	/*
-	 *@param the side trajectory
-	 */ 
 	private void getSideJerks(ArrayList<Waypoint> side) {
 		double accelDiffI = side.get(1).acceleration - side.get(0).acceleration;
 		double timeDiffI = side.get(1).time - side.get(0).time;  
