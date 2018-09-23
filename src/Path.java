@@ -40,7 +40,7 @@ public class Path {
 		findPaths(); 
 		findCentralTrajectory();
 		findSideTrajectories();
-		//parameterizeTrajectories();
+		parameterizeTrajectories();
 	}
 
 	//Finds a point by using cubic bezier
@@ -182,7 +182,6 @@ public class Path {
 			timeAccumlator += timeElapsed; 
 			trajectory.get(i).time = timeAccumlator; 
 		}
-		totalTime = trajectory.get(trajectory.size() - 1).time; 
 	}
 
 	//Gets the accelerations for the central path
@@ -242,16 +241,10 @@ public class Path {
 		getHeadings(centralTrajectory);
 		getVelocities();
 		getTimes(centralTrajectory);
+		totalTime = centralTrajectory.get(centralTrajectory.size() - 1).time; 
 		getAccelerations();  
 		getAngularVelocities(centralTrajectory);
 		getJerks(); //60 ft/sec^3 best for trapezodial motion profile
-	}
-
-	//Copies the headings from the central trajectory to the side
-	private void copyHeadings(ArrayList<Waypoint> side) {
-		for(int i = 0; i < centralTrajectory.size() && i < side.size(); i++) { 
-			side.get(i).heading = centralTrajectory.get(i).heading; 
-		}
 	}
 
 	//Finds the velocities of the side wheels
@@ -259,7 +252,7 @@ public class Path {
 	//And that the side paths be found
 	private void getSideVelocities() {
 		//Iterating through the points of the trajectory
-		for(int i = 0 ; i < centralTrajectory.size(); i ++) {
+		for(int i = 0 ; i < centralTrajectory.size() && i < leftTrajectory.size() && i < rightTrajectory.size(); i ++) {
 			//Find the difference the sides have to be to be spinning at that angular velocity
 			double velocityDifference = (wheelBaseWidth / 2) * centralTrajectory.get(i).angularVelocity; 
 			if(leftTrajectory.get(i).distanceFromStart > rightTrajectory.get(i).distanceFromStart) {
@@ -309,50 +302,62 @@ public class Path {
 	public void findSideTrajectories() { 
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
-		copyHeadings(leftTrajectory); copyHeadings(rightTrajectory);
+		getHeadings(leftTrajectory); getHeadings(rightTrajectory); 
 		getSideVelocities();
 		getTimes(leftTrajectory); getTimes(rightTrajectory);
 		getSideAccelerations(leftTrajectory); getSideAccelerations(rightTrajectory);
 		getSideJerks(leftTrajectory); getSideJerks(rightTrajectory);   
 	}
 
+	//Time Parameterizes the trajectory such that points are a certain time away
+	/*
+	 * @param the trajectory to time parameterize
+	 * @param the curvepoints of the above trajectory
+	 */
 	private void timeParameterize(ArrayList<Waypoint> trajectory, Waypoint[][] curvepoints) {
+		//Delete the old trajectory and save it elsewhere 
 		ArrayList<Waypoint> copy = new ArrayList<Waypoint>(); 
 		for(int i = 0; i < trajectory.size(); i++) {
 			copy.add(trajectory.get(i)); 
 		}
 		trajectory.clear();
-		double totalTime = copy.get(copy.size() - 1).time;
+
 		int index = 0;  
 		double percentage = 0;
-		int curve;  
+		int curve;
+		//Iterate through the timestamps adding dt or the time difference each time   
 		for(double time = 0; time <= totalTime; time += dt) {
-			for(int i = index; i < copy.size() - 1; i++) { 
-				if(time == copy.get(i).time) {
-					index = i;
-					percentage = (double) i / (double) numberOfPoints;   
-					break; 
-				}else if(copy.get(i).time < time && copy.get(i + 1).time > time) {
+			for(int i = 0; i < copy.size() - 1; i++) {  
+				//Find the pair of points with times around our target time
+				if(copy.get(i).time <= time && copy.get(i + 1).time > time) {
 					index = i; 
 					double timeDifference = copy.get(i + 1).time - copy.get(i).time; 
 					double timeNeeded = time - copy.get(i).time;
+					//Get the (extra) percentage needed in whole number format
 					double percentNeeded = timeNeeded / timeDifference;
+					//Convert the percentage to decimal   
 					percentage = (double) (i + percentNeeded) / (double) numberOfPoints; 
 					break;   
 				}
 			}
-			curve = index % numberOfPoints;
-			if(curve >= curvepoints.length) break; 
-			System.out.println(curve + "-" + percentage);  
+
+			//Filter out the percentage, so its less than 1 in order to avoid extrapolation
+			while(percentage >= 1) {
+				percentage--; 
+			}
+
+			//Find the curve that the new point belongs to
+			curve = index / numberOfPoints;   
+			//Get the point with bezier curves
 			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage).toWaypoint();
 			trajectory.add(point); 
 		}
 	}
 
-	public void parameterizeTrajectories() {
+	public void parameterizeTrajectories() { 
 		timeParameterize(centralTrajectory, curvepoints);
 		findCentralTrajectory();
-		timeParameterize(leftTrajectory, leftCurve);
+		timeParameterize(leftTrajectory, leftCurve);  
 		timeParameterize(rightTrajectory, rightCurve);
 		findSideTrajectories();
 	}
