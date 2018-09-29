@@ -30,7 +30,7 @@ public class Main {
 		}   
 		scanner.close();
 
-		Path path = new Path(100, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
+		Path path = new Path(1000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
 		String central = fileLocation + "\\" + trajName + "_central.csv";
 		String left = fileLocation + "\\" + trajName + "_left.csv";
 		String right = fileLocation + "\\" + trajName + "_right.csv";
