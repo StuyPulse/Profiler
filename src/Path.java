@@ -239,7 +239,7 @@ public class Path {
 		//Iterating through the points of the trajectory
 		for(int i = 0 ; i < centralTrajectory.size(); i ++) {
 			//Find the difference the sides have to be to be spinning at that angular velocity
-			double velocityDifference = (wheelBaseWidth / 2) * centralTrajectory.get(i).angularVelocity; 
+			double velocityDifference = (wheelBaseWidth / 2) * centralTrajectory.get(i).angularVelocity;
 			if(leftTrajectory.get(i).distanceFromStart > rightTrajectory.get(i).distanceFromStart) {
 				//If left side is outside it is greater
 				leftTrajectory.get(i).velocity = centralTrajectory.get(i).velocity + velocityDifference; 
