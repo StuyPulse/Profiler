@@ -116,6 +116,7 @@ public class Path {
 		for(int i = 0; i < trajectory.size() - 1; i++) {
 			trajectory.get(i).getHeading(trajectory.get(i + 1));
 		}
+		trajectory.get(trajectory.size() - 1).heading = waypoints[waypoints.length - 1].heading; 
 	}
 	
 	//Gets the velocity and acceleration of the curvepoints under a trapezodial motion profile for the central path

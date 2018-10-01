@@ -67,32 +67,9 @@ public class Waypoint extends Point {
 	 * @param the offset left is positive, right is negative
 	 */
 	public Waypoint offsetWaypointPerpen(double offset) {
-		double angle;
-		if(isFowards()) {
-			angle = heading + Math.PI / 2;  
-		}else {
-			angle = heading - Math.PI / 2;
-			offset *= -1; 
-		}
+		double angle = heading + Math.PI / 2;
 		Point point = Point.PolarPoint(offset, angle); 
 		point = point.offset(x, y); 
 		return new Waypoint(point.x, point.y, heading);  
 	} 
-
-	//Some methods to determine the direction in which the point is going
-	private boolean isFowards() {
-        if((heading >= 0 && heading <= Math.PI / 2) || (heading > (3 * Math.PI) / 2 && heading <= 2 * Math.PI)) {
-            return true; 
-        }else {
-            return false; 
-        }
-    }
-
-    private boolean isBackwards() {
-        if(heading > Math.PI / 2 && heading <= (3 * Math.PI) / 2) {
-            return true; 
-        }else {
-            return false; 
-        }
-    }
 }
