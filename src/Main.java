@@ -30,7 +30,7 @@ public class Main {
 		}   
 		scanner.close();
 
-		Path path = new Path(1000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
+		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
 		String central = fileLocation + "\\" + trajName + "_central_Pulse.csv";
 		String left = fileLocation + "\\" + trajName + "_left_Pulse.csv";
 		String right = fileLocation + "\\" + trajName + "_right_Pulse.csv";
@@ -49,7 +49,7 @@ public class Main {
 
 	public static void writeTrajFile(ArrayList<Waypoint> trajectory, double dt, String fileStr) {
 		Writer writer = new Writer(fileStr);
-		writer.writeLine("time,x,y,position,velocity,acceleration,jerk,heading");
+		writer.writeLine("dt,x,y,position,velocity,acceleration,jerk,heading");
 		for(int i = 0; i < trajectory.size(); i++) {
 			//double time = trajectory.get(i).time;
 			double time = dt;  

@@ -47,12 +47,12 @@ public class Path {
 	 * @param the percentage of the way on the curve
 	 * @param the percentage of the way on the curve 
 	 */
-	Point cubicBezier(Point point1, Point control1, Point control2, Point point2, double alpha) {
+	Waypoint cubicBezier(Waypoint point1, Waypoint control1, Waypoint control2, Waypoint point2, double alpha) {
 		double x = point1.x * Math.pow(1 - alpha, 3) + control1.x * 3 * Math.pow(1 - alpha, 2) * alpha + 
 					control2.x * 3 * (1 - alpha) * Math.pow(alpha, 2) + point2.x * Math.pow(alpha, 3);
 		double y = point1.y * Math.pow(1 - alpha, 3) + control1.y * 3 * Math.pow(1 - alpha, 2) * alpha + 
 					control2.y * 3 * (1 - alpha) * Math.pow(alpha, 2) + point2.y * Math.pow(alpha, 3);
-		return new Point(x, y); 
+		return new Waypoint(x, y); 
 	}
 	
 	//Finds all the points on the path
@@ -70,19 +70,19 @@ public class Path {
 			Waypoint endwp = waypoints[i + 1];
 			double distance = startwp.distanceTo(endwp);
 			double gplength = distance / 2 * tightness; 
-			Point startOffset = Point.PolarPoint(gplength, startwp.heading);
-			Point endOffset = Point.PolarPoint(-gplength, endwp.heading);
-			Point control1 = startwp.offset(startOffset.x, startOffset.y);
-			Point control2 = endwp.offset(endOffset.x, endOffset.y);
+			Waypoint startOffset = Waypoint.PolarPoint(gplength, startwp.heading);
+			Waypoint endOffset = Waypoint.PolarPoint(-gplength, endwp.heading);
+			Waypoint control1 = startwp.offset(startOffset.x, startOffset.y);
+			Waypoint control2 = endwp.offset(endOffset.x, endOffset.y);
 			
 			curvepoints[i][0] = startwp; 
-			curvepoints[i][1] = control1.toWaypoint();
-			curvepoints[i][2] = control2.toWaypoint();
+			curvepoints[i][1] = control1;
+			curvepoints[i][2] = control2;
 			curvepoints[i][3] = endwp;  
 			for(int j = 1; j < numberOfPoints; j++) {
 				double percentage = (double) j / (double) numberOfPoints;
-				Point pathPoint = cubicBezier(startwp, control1, control2, endwp, percentage); 
-				trajectory.add(pathPoint.toWaypoint());
+				Waypoint pathPoint = cubicBezier(startwp, control1, control2, endwp, percentage); 
+				trajectory.add(pathPoint);
 			}
 			trajectory.add(endwp);
 			//The latest added point which is a path point is true
@@ -110,11 +110,11 @@ public class Path {
 		}
 	}
 	
-	//Gets the headings of each waypoint
+	//Gets the headings of each waypoint counterclockwise in radians
 	//Requires that all the curvepoints be generated already
 	private void getHeadings(ArrayList<Waypoint> trajectory) {
 		for(int i = 0; i < trajectory.size() - 1; i++) {
-			trajectory.get(i).getHeading(trajectory.get(i + 1));
+			trajectory.get(i).heading = Math.atan2(trajectory.get(i + 1).y - trajectory.get(i).y, trajectory.get(i + 1).x - trajectory.get(i).x); 
 		}
 		trajectory.get(trajectory.size() - 1).heading = waypoints[waypoints.length - 1].heading; 
 	}
@@ -216,7 +216,7 @@ public class Path {
 		for(int i = 1; i < trajectory.size(); i++) {
 			double headingDiff = trajectory.get(i).heading - trajectory.get(i - 1).heading; 
 			double timeDiff = trajectory.get(i).time - trajectory.get(i - 1).time; 
-			trajectory.get(i).angularVelocity = headingDiff / timeDiff;  
+			trajectory.get(i).angularVelocity = headingDiff / timeDiff;
 		}
 	}
 
@@ -229,7 +229,6 @@ public class Path {
 		getVelocities();
 		getTimes(centralTrajectory); 
 		getAccelerations(centralTrajectory, true);  
-		getAngularVelocities(centralTrajectory);
 		getJerks(centralTrajectory, true); //60 ft/sec^3 best for trapezodial motion profile
 	}
 
@@ -275,6 +274,7 @@ public class Path {
 		} 
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
+		getAngularVelocities(centralTrajectory);
 		getSideVelocities();
 		getAccelerations(leftTrajectory, false); getAccelerations(rightTrajectory, false);
 		getJerks(leftTrajectory, false); getJerks(rightTrajectory, false);   
@@ -321,7 +321,7 @@ public class Path {
 			//Find the curve that the new point belongs to
 			curve = index / numberOfPoints;   
 			//Get the point with bezier curves
-			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage).toWaypoint();
+			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage);
 			trajectory.add(point); 
 		}
 	}

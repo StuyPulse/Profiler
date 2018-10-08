@@ -1,6 +1,8 @@
 
-public class Waypoint extends Point {
+public class Waypoint {
 	//Universal units so longs as you are consistent
+	double x; 
+	double y; 
 	double time;
 	double distanceFromStart; 
 	double distanceFromEnd; 
@@ -11,7 +13,8 @@ public class Waypoint extends Point {
 	double angularVelocity;  
 	
 	public Waypoint(double x, double y) {
-		super(x, y); 
+		this.x = x; 
+		this.y = y; 
 	}
 	
 	//A waypoint in the path
@@ -22,53 +25,39 @@ public class Waypoint extends Point {
 	 * @param heading counterclockwise in radians
 	 */
 	public Waypoint(double x, double y, double heading) {
-		super(x, y);
+		this.x = x; 
+		this.y = y; 
 		this.heading = heading; 
 	}
-	
-	//Gets the heading of the waypoint in a path counterclockwise and in radians
-	/*
-	 * @param another waypoint persumably the next one
-	 */
-	public void getHeading(Waypoint waypoint) {
-		double xDiff = waypoint.x - this.x; 
-		double yDiff = waypoint.y - this.y;
-		
-		if(waypoint.x >= this.x - 0.001 && waypoint.x <= this.x + 0.001) {
-			if(yDiff > 0) {
-				heading = Math.PI / 2;
-			}else if(yDiff < 0) {
-				heading = 3 * Math.PI / 2; 
-			}
-		}else if(waypoint.y >= this.y - 0.001 && waypoint.y <= this.y + 0.001) {
-			if(xDiff > 0) {
-				heading = 0; 
-			}else if(xDiff < 0) {
-				heading = Math.PI; 
-			}
-		}else {	
-			double opposite = Math.abs(waypoint.y - this.y);
-			double adjacent = Math.abs(waypoint.x - this.x);
-			
-			if(xDiff > 0 && yDiff > 0) {
-				heading = Math.atan(opposite / adjacent);
-			}else if(xDiff < 0 && yDiff < 0) {
-				heading = Math.PI + Math.atan(opposite / adjacent);
-			}else if(xDiff < 0 && yDiff > 0) {
-				heading = Math.PI - Math.atan(opposite / adjacent);
-			}else if(xDiff > 0 && yDiff < 0) {
-				heading = 2 * Math.PI - Math.atan(opposite / adjacent);
-			}
-		}
-	}
 
+	//Polar point
+	/*
+	 *@param distance form the origin 
+	 *@param rotation counterclockwise from the positive x axis in radians 
+	*/
+	public static Waypoint PolarPoint(double distance, double rotation) {
+		double x = Math.cos(rotation) * distance;
+		double y = Math.sin(rotation) * distance;
+		return new Waypoint(x, y);
+	}
+	
+	public double distanceTo(Waypoint point) {
+		return Math.sqrt(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2));
+	}
+	
+	public Waypoint offset(double xOffset, double yOffset) {
+		double newX = x + xOffset; 
+		double newY = y + yOffset; 
+		return new Waypoint(newX, newY); 
+	}
+	
 	//A method to get a perpendicauliar offset of a point
 	/*
 	 * @param the offset left is positive, right is negative
 	 */
 	public Waypoint offsetWaypointPerpen(double offset) {
 		double angle = heading + Math.PI / 2;
-		Point point = Point.PolarPoint(offset, angle); 
+		Waypoint point = Waypoint.PolarPoint(offset, angle); 
 		point = point.offset(x, y); 
 		return new Waypoint(point.x, point.y, heading);  
 	} 
