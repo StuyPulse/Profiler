@@ -15,9 +15,10 @@ public class Path {
 	double maxJerk;
 	double wheelBaseWidth; //The offset for the paths is half the wheel base width
 	ArrayList<Waypoint> leftTrajectory, rightTrajectory; 
+	boolean velCorrection; 
 	
 	//Enter information for the center of the robot 
-	public Path(int numberOfPoints, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, boolean velCorrection, Waypoint... waypoints) {
 		if(waypoints.length < 2) {
 			System.out.println("Not enough points");
 			System.exit(0);
@@ -28,6 +29,7 @@ public class Path {
 		this.maxVelocity = maxVelocity; 
 		this.maxAcceleration = maxAcceleration; 
 		this.maxJerk = maxJerk; 
+		this.velCorrection = velCorrection; 
 		this.waypoints = waypoints; 
 		this.curvepoints = new Waypoint[waypoints.length - 1][4];  
 		centralTrajectory = new ArrayList<Waypoint>();
@@ -122,8 +124,25 @@ public class Path {
 	//Gets the velocity and acceleration of the curvepoints under a trapezodial motion profile for the central path
 	//Requires that the distances be found
 	//To do velocity corrections angular velocities must be found
-	private void getVelocities() {
-		for(int i = 0; i < centralTrajectory.size(); i++) { 
+	/*
+	 * @param if velocity should be restrained or not at turns
+	 */
+	private void getVelocities(boolean correction) { 
+		double maxVelocity = this.maxVelocity; 
+		for(int i = 0; i < centralTrajectory.size(); i++) {
+			//Does the correction for lowering velocity when turning
+			if(correction) {
+				//Calculate the outside wheel velocity 
+				double velDiff = centralTrajectory.get(i).angularVelocity * (wheelBaseWidth / 2); 
+				double outside = centralTrajectory.get(i).velocity + velDiff;
+				//If outside is greater replace the max velocity with a restrained one
+				if(outside >= this.maxVelocity) {
+					maxVelocity = Math.pow(this.maxVelocity, 2) / outside; 
+				}else {
+					maxVelocity = this.maxVelocity; 
+				}
+			} 
+
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
 			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
 			double accelVel = Math.sqrt(2 * maxAcceleration * centralTrajectory.get(i).distanceFromStart);
@@ -226,7 +245,7 @@ public class Path {
 		getDistancesFromStart(centralTrajectory); 
 		getDistancesFromEnd(centralTrajectory); 
 		getHeadings(centralTrajectory);
-		getVelocities();
+		getVelocities(false);
 		getTimes(centralTrajectory); 
 		getAccelerations(centralTrajectory, true);  
 		getJerks(centralTrajectory, true); //60 ft/sec^3 best for trapezodial motion profile
@@ -275,6 +294,7 @@ public class Path {
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
 		getAngularVelocities(centralTrajectory);
+		getVelocities(velCorrection);
 		getSideVelocities();
 		getAccelerations(leftTrajectory, false); getAccelerations(rightTrajectory, false);
 		getJerks(leftTrajectory, false); getJerks(rightTrajectory, false);   
