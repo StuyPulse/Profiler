@@ -242,11 +242,19 @@ public class Path {
 	//Finds the trajectory of the center of the robot 
 	//Paths must be made first
 	public void findCentral() {
+		//Path values
 		getDistancesFromStart(centralTrajectory); 
 		getDistancesFromEnd(centralTrajectory); 
 		getHeadings(centralTrajectory);
+		
+		//Velocity and velocity corrections
 		getVelocities(false);
-		getTimes(centralTrajectory); 
+		getTimes(centralTrajectory);
+		getAngularVelocities(centralTrajectory);
+		getVelocities(velCorrection);
+		getTimes(centralTrajectory);
+
+		//Accelerations and jerk
 		getAccelerations(centralTrajectory, true);  
 		getJerks(centralTrajectory, true); //60 ft/sec^3 best for trapezodial motion profile
 	}
@@ -276,26 +284,24 @@ public class Path {
 	}
 
 	//Finds the trajectories for the sides of the robot 
-	//Paths must be made first
+	//Trajectory for the center must be found first
 	public void findSides() { 
+		//Path values
 		double offset = wheelBaseWidth / 2;
 		leftTrajectory.clear(); rightTrajectory.clear();
 		for(int i = 0; i < centralTrajectory.size(); i++) {
 			//iterate through central trajectory
 			//offset each point
-			//copy the time and the heading
 			leftTrajectory.add(centralTrajectory.get(i).offsetWaypointPerpen(offset));
-			leftTrajectory.get(i).time = centralTrajectory.get(i).time; 
-			leftTrajectory.get(i).heading = centralTrajectory.get(i).heading; 
-			rightTrajectory.add(centralTrajectory.get(i).offsetWaypointPerpen(-offset));
-			rightTrajectory.get(i).time = centralTrajectory.get(i).time; 
-			rightTrajectory.get(i).heading = centralTrajectory.get(i).heading;  
+			rightTrajectory.add(centralTrajectory.get(i).offsetWaypointPerpen(-offset)); 
 		} 
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
-		getAngularVelocities(centralTrajectory);
-		getVelocities(velCorrection);
+		getHeadings(leftTrajectory); getHeadings(rightTrajectory);
+
+		//Trajectory values
 		getSideVelocities();
+		getTimes(leftTrajectory); getTimes(rightTrajectory); 
 		getAccelerations(leftTrajectory, false); getAccelerations(rightTrajectory, false);
 		getJerks(leftTrajectory, false); getJerks(rightTrajectory, false);   
 	}
