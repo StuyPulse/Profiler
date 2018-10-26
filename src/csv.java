@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 
-public class csv {
+public class Csv {
     
     public static BufferedWriter getWriter(String fileStr) throws IOException {
         FileWriter fwriter = new FileWriter(fileStr);

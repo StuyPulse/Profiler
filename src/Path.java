@@ -133,7 +133,7 @@ public class Path {
 			//Does the correction for lowering velocity when turning
 			if(correction) {
 				//Calculate the outside wheel velocity 
-				double velDiff = centralTrajectory.get(i).angularVelocity * (wheelBaseWidth / 2); 
+				double velDiff = Math.abs(centralTrajectory.get(i).angularVelocity) * (wheelBaseWidth / 2); 
 				double outside = centralTrajectory.get(i).velocity + velDiff;
 				//If outside is greater replace the max velocity with a restrained one
 				if(outside >= this.maxVelocity) {

@@ -36,19 +36,21 @@ public class Main {
 			String left = fileLocation + "\\" + trajName + "_left_Pulse.csv";
 			String right = fileLocation + "\\" + trajName + "_right_Pulse.csv";
 			try {
-				csv.writeTrajFile(path.centralTrajectory, central);
-				csv.writeTrajFile(path.leftTrajectory, left);
-				csv.writeTrajFile(path.rightTrajectory, right);
+				Csv.writeTrajFile(path.centralTrajectory, central);
+				Csv.writeTrajFile(path.leftTrajectory, left);
+				Csv.writeTrajFile(path.rightTrajectory, right);
 			}catch (IOException i) {
 				System.out.println("Invalid file"); 
+				i.printStackTrace();
 			}
 		}else if(function == 'R') {
 			 System.out.print("File Location: "); 
 			 try {
-				ArrayList<Waypoint> trajectory = csv.readTrajFile(scanner.nextLine());
+				ArrayList<Waypoint> trajectory = Csv.readTrajFile(scanner.nextLine());
 				//Do whatever you want with the trajectory
 			 }catch (IOException i) {
 				System.out.println("Invalid file"); 
+				i.printStackTrace();
 			 } 
 		}
 		scanner.close();
