@@ -1,0 +1,59 @@
+import java.util.ArrayList;
+
+public class Follower {
+	private ArrayList<Waypoint> trajectory;
+	private int waypointNum; 
+	private double dt; 
+	private double kp, ki, kd, kv, ka; 
+	private double currentError, lastError, errorNum; 
+	
+	public Follower(ArrayList<Waypoint> trajectory, double dt) {
+		this.trajectory = trajectory;
+		waypointNum = 0; 
+		this.dt = dt;
+		currentError = 0; 
+		lastError = 0; 
+		errorNum = 0; 
+	}
+	
+	public void setTrajectory(ArrayList<Waypoint> trajectory, double dt) {
+		this.trajectory = trajectory; 
+		this.dt = dt; 
+		reset(); 
+	}
+	
+	public void reset() {
+		waypointNum = 0;
+		currentError = 0; 
+		lastError = 0; 
+		errorNum = 0; 
+	}
+	
+	public void configureGains(double kp, double ki, double kd, double kv, double ka) {
+		this.kp = kp; 
+		this.ki = ki; 
+		this.kd = kd; 
+		this.kv = kv; 
+		this.ka = ka; 
+	}
+	
+	public Waypoint getCurrentWaypoint() {
+		return trajectory.get(waypointNum); 
+	}
+	
+	public double calculate(double distance) {
+		currentError = getCurrentWaypoint().distanceFromStart - distance;
+		if(currentError != 0) errorNum++; 
+		double p = kp * currentError; 
+		double i = ki * errorNum; 
+		double d = kd * ((currentError - lastError) / dt); 
+		double v = kv * getCurrentWaypoint().velocity;
+		double a = ka * getCurrentWaypoint().acceleration;
+		if(!isLast()) waypointNum++; 
+		return p + i + d + v + a; 
+	}
+	
+	public boolean isLast() {
+		return waypointNum >= trajectory.size() - 1; 
+	}
+}
