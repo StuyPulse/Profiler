@@ -7,18 +7,18 @@ public class Follower {
 	private double kp, ki, kd, kv, ka; 
 	private double currentError, lastError, errorNum; 
 	
-	public Follower(ArrayList<Waypoint> trajectory, double dt) {
+	public Follower(ArrayList<Waypoint> trajectory) {
 		this.trajectory = trajectory;
 		waypointNum = 0; 
-		this.dt = dt;
+		this.dt = trajectory.get(1).time;
 		currentError = 0; 
 		lastError = 0; 
 		errorNum = 0; 
 	}
 	
-	public void setTrajectory(ArrayList<Waypoint> trajectory, double dt) {
+	public void setTrajectory(ArrayList<Waypoint> trajectory) {
 		this.trajectory = trajectory; 
-		this.dt = dt; 
+		this.dt = trajectory.get(1).time; 
 		reset(); 
 	}
 	
