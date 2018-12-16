@@ -5,20 +5,20 @@ public class Path {
 	//Trajectory contains all the calculated points while waypoints are just the points the user provided
 	//Trajectory has all the points while waypoint only stores the points the user gave in (x, y, and heading) 
 	//curvepoints stores the points that define each curve
-	ArrayList<Waypoint> centralTrajectory;
-	Waypoint[] waypoints;  
-	Waypoint[][] curvepoints; 
-	int numberOfPoints; //The number of points per curve
-	double dt; 
-	double maxVelocity; 
-	double maxAcceleration; 
-	double maxJerk;
-	double wheelBaseWidth; //The offset for the paths is half the wheel base width
-	ArrayList<Waypoint> leftTrajectory, rightTrajectory; 
-	boolean velCorrection; 
+	private ArrayList<Waypoint> centralTrajectory;
+	public Waypoint[] waypoints;  
+	private Waypoint[][] curvepoints; 
+	public int numberOfPoints; //The number of points per curve
+	public double dt; 
+	public double maxVelocity; 
+	public double maxAcceleration; 
+	public double maxJerk;
+	public double wheelBaseWidth; //The offset for the paths is half the wheel base width
+	private ArrayList<Waypoint> leftTrajectory, rightTrajectory; 
+	public boolean velCor; 
 	
 	//Enter information for the center of the robot 
-	public Path(int numberOfPoints, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, boolean velCorrection, Waypoint... waypoints) {
+	public Path(int numberOfPoints, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, boolean velCor, Waypoint... waypoints) {
 		if(waypoints.length < 2) {
 			System.out.println("Not enough points");
 			System.exit(0);
@@ -29,17 +29,26 @@ public class Path {
 		this.maxVelocity = maxVelocity; 
 		this.maxAcceleration = maxAcceleration; 
 		this.maxJerk = maxJerk; 
-		this.velCorrection = velCorrection; 
+		this.velCor = velCor; 
 		this.waypoints = waypoints; 
 		this.curvepoints = new Waypoint[waypoints.length - 1][4];  
 		centralTrajectory = new ArrayList<Waypoint>();
 		leftTrajectory = new ArrayList<Waypoint>(); rightTrajectory = new ArrayList<Waypoint>();
-		genBezierPath(numberOfPoints, 0.8, centralTrajectory, curvepoints, waypoints);
-		findCentral();
-		findSides();
-		parameterizeTrajectories();
+		generate(); 
 	}
 
+	public ArrayList<Waypoint> getCentralTrajectory() { 
+		return centralTrajectory; 
+	}
+	
+	public ArrayList<Waypoint> getLeftTrajectory() { 
+		return leftTrajectory; 
+	}
+	
+	public ArrayList<Waypoint> getRightTrajectory() { 
+		return rightTrajectory; 
+	}
+	
 	//Finds a point by using cubic bezier
 	/*
 	 * @param the first point on the line
@@ -251,7 +260,7 @@ public class Path {
 		getVelocities(false);
 		getTimes(centralTrajectory);
 		getAngularVelocities(centralTrajectory);
-		getVelocities(velCorrection);
+		getVelocities(velCor);
 		getTimes(centralTrajectory);
 
 		//Accelerations and jerk
@@ -356,5 +365,12 @@ public class Path {
 		timeParameterize(centralTrajectory, curvepoints);
 		findCentral();
 		findSides();
+	}
+	
+	public void generate() { 
+		genBezierPath(numberOfPoints, 0.8, centralTrajectory, curvepoints, waypoints);
+		findCentral();
+		findSides();
+		parameterizeTrajectories();
 	}
 }

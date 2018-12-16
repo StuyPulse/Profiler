@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Csv {
-	public static final String[] exportModes = {"Pulse", "Jaci"};  
-	
     public static BufferedWriter getWriter(String fileStr) throws IOException {
         FileWriter fwriter = new FileWriter(fileStr);
         return new BufferedWriter(fwriter);  

@@ -4,7 +4,7 @@ public class Follower {
 	private ArrayList<Waypoint> trajectory;
 	private int waypointNum; 
 	private double dt; 
-	private double kp, ki, kd, kv, ka; 
+	private double kp, ki, eThreshold, kd, kv, ka; 
 	private double currentError, lastError, errorNum; 
 	
 	public Follower(ArrayList<Waypoint> trajectory) {
@@ -29,9 +29,10 @@ public class Follower {
 		errorNum = 0; 
 	}
 	
-	public void configureGains(double kp, double ki, double kd, double kv, double ka) {
+	public void configureGains(double kp, double ki, double eThreshold, double kd, double kv, double ka) {
 		this.kp = kp; 
 		this.ki = ki; 
+		this.eThreshold = Math.abs(eThreshold); 
 		this.kd = kd; 
 		this.kv = kv; 
 		this.ka = ka; 
@@ -43,7 +44,7 @@ public class Follower {
 	
 	public double calculate(double distance) {
 		currentError = getCurrentWaypoint().distanceFromStart - distance;
-		if(currentError != 0) errorNum++; 
+		if(Math.abs(currentError) >= eThreshold) errorNum++; 
 		double p = kp * currentError; 
 		double i = ki * errorNum; 
 		double d = kd * ((currentError - lastError) / dt); 

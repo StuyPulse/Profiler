@@ -1,6 +1,5 @@
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner; 
 
 public class Main {
@@ -16,8 +15,7 @@ public class Main {
 		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
 		System.out.print("Max Acceleration: "); double maxAcceleration = scanner.nextDouble(); 
 		System.out.print("Max Jerk: "); double maxJerk = scanner.nextDouble();
-		System.out.print("Velocity Correction?[true/false] "); 
-		boolean velCorrection = scanner.nextLine().toLowerCase().charAt(0) == 't'; 
+		System.out.print("Velocity Correction?[true/false]: "); boolean velCor = scanner.nextBoolean();  
 
 		System.out.print("Then the waypoints\n"
 							+ "Number of waypoints: ");
@@ -29,26 +27,24 @@ public class Main {
 		}   
 		
 		String mode = ""; 
-		while(!(Arrays.asList(Csv.exportModes).contains(mode))) {
-			System.out.print("Finally the export mode[Pulse/Jaci]"); mode = scanner.nextLine().toLowerCase(); 
-		}
+		System.out.print("Finally the export mode[Pulse/Jaci]: "); mode = scanner.nextLine();
 
-		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, velCorrection, waypoints);
+		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, velCor, waypoints);
 		String central = fileLocation + "\\" + trajName + "_central_" + mode + ".csv";
 		String left = fileLocation + "\\" + trajName + "_left_" + mode + ".csv";
 		String right = fileLocation + "\\" + trajName + "_right_" + mode + ".csv";
 		try {
-			switch(mode) {
-				case "Pulse":
-					Csv.writeTrajFilePulse(path.centralTrajectory, central);
-					Csv.writeTrajFilePulse(path.leftTrajectory, left);
-					Csv.writeTrajFilePulse(path.rightTrajectory, right);
-					break; 
+			switch(mode) { 
 				case "Jaci": 
-					Csv.writeTrajFileJaci(path.centralTrajectory, central, dt);
-					Csv.writeTrajFileJaci(path.leftTrajectory, left, dt);
-					Csv.writeTrajFileJaci(path.rightTrajectory, right, dt);
-					break; 
+					Csv.writeTrajFileJaci(path.getCentralTrajectory(), central, dt);
+					Csv.writeTrajFileJaci(path.getLeftTrajectory(), left, dt);
+					Csv.writeTrajFileJaci(path.getRightTrajectory(), right, dt);
+					break;
+				default: 
+					Csv.writeTrajFilePulse(path.getCentralTrajectory(), central);
+					Csv.writeTrajFilePulse(path.getLeftTrajectory(), left);
+					Csv.writeTrajFilePulse(path.getRightTrajectory(), right);
+					break;
 			}
 		}catch (IOException i) {
 			System.out.println("Invalid file"); 
