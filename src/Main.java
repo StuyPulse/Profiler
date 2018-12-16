@@ -8,7 +8,9 @@ public class Main {
 		System.out.println("First lets do some file stuff"); 
 		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
 		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
-
+		String mode = "Pulse"; 
+		System.out.print("Export Mode[Pulse/Jaci]: "); mode = scanner.nextLine();
+		
 		System.out.println("Next enter some information"); 
 		System.out.print("dt: "); double dt = scanner.nextDouble(); 
 		System.out.print("Wheel Base Width: "); double wheelBase = scanner.nextDouble(); 
@@ -25,16 +27,13 @@ public class Main {
 		for(int i = 0; i < waypoints.length; i++) {
 			waypoints[i] = new Waypoint(scanner.nextDouble(), scanner.nextDouble(), d2r(scanner.nextDouble())); 
 		}   
-		
-		String mode = ""; 
-		System.out.print("Finally the export mode[Pulse/Jaci]: "); mode = scanner.nextLine();
 
 		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, velCor, waypoints);
 		String central = fileLocation + "\\" + trajName + "_central_" + mode + ".csv";
 		String left = fileLocation + "\\" + trajName + "_left_" + mode + ".csv";
 		String right = fileLocation + "\\" + trajName + "_right_" + mode + ".csv";
 		try {
-			switch(mode) { 
+			switch(mode) {
 				case "Jaci": 
 					Csv.writeTrajFileJaci(path.getCentralTrajectory(), central, dt);
 					Csv.writeTrajFileJaci(path.getLeftTrajectory(), left, dt);
