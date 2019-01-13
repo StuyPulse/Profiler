@@ -1,4 +1,5 @@
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Scanner; 
 
@@ -29,9 +30,11 @@ public class Main {
 		}   
 
 		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, velCor, waypoints);
-		String central = fileLocation + "\\" + trajName + "_central_" + mode + ".csv";
-		String left = fileLocation + "\\" + trajName + "_left_" + mode + ".csv";
-		String right = fileLocation + "\\" + trajName + "_right_" + mode + ".csv";
+		File paths = new File(fileLocation + "\\" + trajName);
+		paths.mkdir();
+		String central = paths.getPath() + "\\" + trajName + "_central_" + mode + ".csv";
+		String left = paths.getPath() + "\\" + trajName + "_left_" + mode + ".csv";
+		String right = paths.getPath() + "\\" + trajName + "_right_" + mode + ".csv";
 		try {
 			switch(mode) {
 				case "Jaci": 

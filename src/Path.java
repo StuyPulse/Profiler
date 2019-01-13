@@ -7,7 +7,7 @@ public class Path {
 	//curvepoints stores the points that define each curve
 	private ArrayList<Waypoint> centralTrajectory;
 	public Waypoint[] waypoints;  
-	private Waypoint[][] curvepoints; 
+	private Waypoint[][] curvepoints;
 	public int numberOfPoints; //The number of points per curve
 	public double dt; 
 	public double maxVelocity; 
@@ -58,7 +58,7 @@ public class Path {
 	 * @param the percentage of the way on the curve
 	 * @param the percentage of the way on the curve 
 	 */
-	Waypoint cubicBezier(Waypoint point1, Waypoint control1, Waypoint control2, Waypoint point2, double alpha) {
+	private Waypoint cubicBezier(Waypoint point1, Waypoint control1, Waypoint control2, Waypoint point2, double alpha) {
 		double x = point1.x * Math.pow(1 - alpha, 3) + control1.x * 3 * Math.pow(1 - alpha, 2) * alpha + 
 					control2.x * 3 * (1 - alpha) * Math.pow(alpha, 2) + point2.x * Math.pow(alpha, 3);
 		double y = point1.y * Math.pow(1 - alpha, 3) + control1.y * 3 * Math.pow(1 - alpha, 2) * alpha + 
@@ -136,22 +136,8 @@ public class Path {
 	/*
 	 * @param if velocity should be restrained or not at turns
 	 */
-	private void getVelocities(boolean correction) { 
-		double maxVelocity = this.maxVelocity; 
-		for(int i = 0; i < centralTrajectory.size(); i++) {
-			//Does the correction for lowering velocity when turning
-			if(correction) {
-				//Calculate the outside wheel velocity 
-				double velDiff = Math.abs(centralTrajectory.get(i).angularVelocity) * (wheelBaseWidth / 2); 
-				double outside = centralTrajectory.get(i).velocity + velDiff;
-				//If outside is greater replace the max velocity with a restrained one
-				if(outside >= this.maxVelocity) {
-					maxVelocity = Math.pow(this.maxVelocity, 2) / outside; 
-				}else {
-					maxVelocity = this.maxVelocity; 
-				}
-			} 
-
+	private void findVelocities() {  
+		for(int i = 0; i < centralTrajectory.size(); i++) { 
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
 			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
 			double accelVel = Math.sqrt(2 * maxAcceleration * centralTrajectory.get(i).distanceFromStart);
@@ -159,13 +145,29 @@ public class Path {
 			double decelVel = Math.sqrt(2 * maxAcceleration * centralTrajectory.get(i).distanceFromEnd);
 			
 			//Sets the velocity to the minium of these
-			if(accelVel < cruiseVel && accelVel < decelVel) {
+			double lowest = Math.min(Math.min(accelVel, cruiseVel), decelVel);
+			if(lowest == accelVel) {
 				centralTrajectory.get(i).velocity = accelVel;  
-			}else if(cruiseVel < accelVel && cruiseVel < decelVel) {
+			}else if(lowest == cruiseVel) {
 				centralTrajectory.get(i).velocity = cruiseVel;  
-			}else if(decelVel < accelVel && decelVel < cruiseVel) {
+			}else {
 				centralTrajectory.get(i).velocity = decelVel;
 			} 
+		}
+	}
+	
+	//Ensures that all velocites are under the max velocity cap
+	//requires that the velocites and angular velocities be found
+	private void correctVelocities() {
+		for(int i = 0; i < centralTrajectory.size(); i++) {
+			//calculate the outside wheel velocity
+			double velDiff = Math.abs(centralTrajectory.get(i).angularVelocity) * (wheelBaseWidth / 2); 
+			double outside = centralTrajectory.get(i).velocity + velDiff;
+			if(outside > maxVelocity) {
+				//lower the velocity but keep the same proportion
+				double newVel = centralTrajectory.get(i).velocity * maxVelocity / outside; 
+				centralTrajectory.get(i).velocity = newVel; 
+			}
 		}
 	}
 	
@@ -183,16 +185,26 @@ public class Path {
 		}
 	}
 
+	
+	private void getVelocities(ArrayList<Waypoint> trajectory) {
+		trajectory.get(0).velocity = 0; 
+		for(int i = 1; i < trajectory.size(); i++) {
+			double distanceTravelled = trajectory.get(i).distanceFromStart - 
+					trajectory.get(i - 1).distanceFromStart; 
+			double timeElapsed = trajectory.get(i).time - 
+					trajectory.get(i - 1).time; 
+			trajectory.get(i).velocity = distanceTravelled / timeElapsed; 
+		}
+	}
+	
 	//Gets the accelerations for the central path
 	//Requires that velocities and times be found
 	/*
 	 * @param the trajectory to get the accelerations from 
 	 * @param wether or not to limit to the max acceleration, use only for central trajectory
 	 */
-	private void getAccelerations(ArrayList<Waypoint> trajectory, boolean constrict) {
-		double velocityDiffI = trajectory.get(1).velocity - trajectory.get(0).velocity;
-		double timeDiffI = trajectory.get(1).time - trajectory.get(0).time;  
-		trajectory.get(0).acceleration = velocityDiffI / timeDiffI; 
+	private void getAccelerations(ArrayList<Waypoint> trajectory) { 
+		trajectory.get(0).acceleration = 0; 
 		for(int i = 1; i < trajectory.size(); i++) {
 			double velocityDiff = trajectory.get(i).velocity - trajectory.get(i - 1).velocity;
 			if(velocityDiff == 0) {
@@ -201,12 +213,11 @@ public class Path {
 			} 
 			double timeDiff = trajectory.get(i).time - trajectory.get(i - 1).time; 
 			trajectory.get(i).acceleration = velocityDiff / timeDiff;
-			if(constrict) {
-				if(trajectory.get(i).acceleration > maxAcceleration) {
-					trajectory.get(i).acceleration = maxAcceleration; 
-				}else if(trajectory.get(i).acceleration < -maxAcceleration) {
-					trajectory.get(i).acceleration = -maxAcceleration;
-				} 
+
+			if(trajectory.get(i).acceleration > maxAcceleration) {
+				trajectory.get(i).acceleration = maxAcceleration; 
+			}else if(trajectory.get(i).acceleration < -maxAcceleration) {
+				trajectory.get(i).acceleration = -maxAcceleration;
 			}
 		} 
 	}
@@ -217,17 +228,16 @@ public class Path {
 	 * @param the trajectory to get the jerks from 
 	 * @param wether or not to limit to the max jerk, use only for central trajectory
 	 */
-	private void getJerks(ArrayList<Waypoint> trajectory, boolean constrict) {
-		double accelDiffI = trajectory.get(1).acceleration - trajectory.get(0).acceleration; 
-		double timeDiffI = trajectory.get(1).time - trajectory.get(0).time; 
-		trajectory.get(0).jerk = accelDiffI / timeDiffI; 
+	private void getJerks(ArrayList<Waypoint> trajectory) {
+		trajectory.get(0).jerk = 0; 
 		for(int i = 1; i < trajectory.size(); i++) {
 			double accelerationDiff = trajectory.get(i).acceleration - trajectory.get(i - 1).acceleration; 
 			if(accelerationDiff == 0) {
 				trajectory.get(i).jerk = 0; 
 			}
 			double timeElapsed = trajectory.get(i).time - trajectory.get(i - 1).time; 
-			trajectory.get(i).jerk = accelerationDiff / timeElapsed; 
+			trajectory.get(i).jerk = accelerationDiff / timeElapsed;
+			
 			if(trajectory.get(i).jerk > maxJerk) { 
 				trajectory.get(i).jerk = maxJerk; 
 			}else if(trajectory.get(i).jerk < -maxJerk) {
@@ -250,22 +260,24 @@ public class Path {
 
 	//Finds the trajectory of the center of the robot 
 	//Paths must be made first
-	public void findCentral() {
+	private void findCenter() {
 		//Path values
 		getDistancesFromStart(centralTrajectory); 
 		getDistancesFromEnd(centralTrajectory); 
 		getHeadings(centralTrajectory);
 		
 		//Velocity and velocity corrections
-		getVelocities(false);
+		findVelocities();
 		getTimes(centralTrajectory);
 		getAngularVelocities(centralTrajectory);
-		getVelocities(velCor);
-		getTimes(centralTrajectory);
+		if(velCor) {
+			correctVelocities(); 
+			getTimes(centralTrajectory); 
+		}
 
 		//Accelerations and jerk
-		getAccelerations(centralTrajectory, true);  
-		getJerks(centralTrajectory, true); //60 ft/sec^3 best for trapezodial motion profile
+		getAccelerations(centralTrajectory);  
+		getJerks(centralTrajectory); //60 ft/sec^3 best for trapezodial motion profile
 	}
 
 	//Finds the velocities of the side wheels
@@ -291,28 +303,33 @@ public class Path {
 			}
 		}
 	}
-
+	
 	//Finds the trajectories for the sides of the robot 
 	//Trajectory for the center must be found first
-	public void findSides() { 
-		//Path values
+	private void findSides() { 
 		double offset = wheelBaseWidth / 2;
 		leftTrajectory.clear(); rightTrajectory.clear();
 		for(int i = 0; i < centralTrajectory.size(); i++) {
 			//iterate through central trajectory
 			//offset each point
-			leftTrajectory.add(centralTrajectory.get(i).offsetWaypointPerpen(offset));
-			rightTrajectory.add(centralTrajectory.get(i).offsetWaypointPerpen(-offset)); 
-		} 
+			Waypoint leftOffset = centralTrajectory.get(i).offsetWaypointPerpen(offset);
+			leftOffset.time = centralTrajectory.get(i).time;
+			leftTrajectory.add(leftOffset);
+			Waypoint rightOffset = centralTrajectory.get(i).offsetWaypointPerpen(-offset);
+			rightOffset.time = centralTrajectory.get(i).time;
+			rightTrajectory.add(rightOffset); 
+		}
+		//Path values
 		getDistancesFromStart(leftTrajectory); getDistancesFromStart(rightTrajectory);
 		getDistancesFromEnd(leftTrajectory); getDistancesFromEnd(rightTrajectory);
 		getHeadings(leftTrajectory); getHeadings(rightTrajectory);
 
 		//Trajectory values
-		getSideVelocities();
-		getTimes(leftTrajectory); getTimes(rightTrajectory); 
-		getAccelerations(leftTrajectory, false); getAccelerations(rightTrajectory, false);
-		getJerks(leftTrajectory, false); getJerks(rightTrajectory, false);   
+		//getSideVelocities();
+		//getTimes(leftTrajectory); getTimes(rightTrajectory);
+		getVelocities(leftTrajectory); getVelocities(rightTrajectory);
+		getAccelerations(leftTrajectory); getAccelerations(rightTrajectory);
+		getJerks(leftTrajectory); getJerks(rightTrajectory);   
 	}
 
 	//Time Parameterizes the trajectory such that points are a certain time away
@@ -320,14 +337,14 @@ public class Path {
 	 * @param the trajectory to time parameterize
 	 * @param the curvepoints of the above trajectory
 	 */
-	private void timeParameterize(ArrayList<Waypoint> trajectory, Waypoint[][] curvepoints) {
-		double totalTime = trajectory.get(trajectory.size() - 1).time;
+	private void timeParameterize() {
+		double totalTime = centralTrajectory.get(centralTrajectory.size() - 1).time;
 		//Delete the old trajectory and save it elsewhere 
 		ArrayList<Waypoint> copy = new ArrayList<Waypoint>(); 
-		for(int i = 0; i < trajectory.size(); i++) {
-			copy.add(trajectory.get(i)); 
+		for(int i = 0; i < centralTrajectory.size(); i++) {
+			copy.add(centralTrajectory.get(i)); 
 		}
-		trajectory.clear();
+		centralTrajectory.clear();
 
 		int index = 0;  
 		double percentage = 0;
@@ -357,20 +374,21 @@ public class Path {
 			curve = index / numberOfPoints;   
 			//Get the point with bezier curves
 			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage);
-			trajectory.add(point); 
+			point.time = time; 
+			centralTrajectory.add(point); 
 		}
+		
+		getDistancesFromStart(centralTrajectory); 
+		getHeadings(centralTrajectory);
+		getVelocities(centralTrajectory);
+		getAccelerations(centralTrajectory); 
+		getJerks(centralTrajectory);
 	}
 
-	public void parameterizeTrajectories() { 
-		timeParameterize(centralTrajectory, curvepoints);
-		findCentral();
-		findSides();
-	}
-	
 	public void generate() { 
 		genBezierPath(numberOfPoints, 0.8, centralTrajectory, curvepoints, waypoints);
-		findCentral();
+		findCenter();
+		timeParameterize();
 		findSides();
-		parameterizeTrajectories();
 	}
 }
