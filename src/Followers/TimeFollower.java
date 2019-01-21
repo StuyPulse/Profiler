@@ -1,13 +1,16 @@
+package Followers;
 import java.util.ArrayList;
 
-public class Follower {
+import Generation.Waypoint;
+
+public class TimeFollower {
 	private ArrayList<Waypoint> trajectory;
 	private int waypointNum; 
 	private double dt; 
 	private double kp, ki, eThreshold, kd, kv, ka; 
 	private double currentError, lastError, errorNum; 
 	
-	public Follower(ArrayList<Waypoint> trajectory) {
+	public TimeFollower(ArrayList<Waypoint> trajectory) {
 		this.trajectory = trajectory;
 		waypointNum = 0; 
 		this.dt = trajectory.get(1).time;

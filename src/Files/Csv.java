@@ -1,3 +1,4 @@
+package Files;
  
 import java.io.BufferedReader; 
 import java.io.BufferedWriter;
@@ -6,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException; 
 
 import java.util.ArrayList;
+
+import Generation.Waypoint;
 
 public class Csv {
     public static BufferedWriter getWriter(String fileStr) throws IOException {

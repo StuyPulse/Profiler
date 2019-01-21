@@ -1,16 +1,16 @@
+package Generation;
 
 public class Waypoint {
 	//Universal units so longs as you are consistent
-	double x; 
-	double y; 
-	double time;
-	double distanceFromStart; 
-	double distanceFromEnd; 
-	double velocity; 
-	double acceleration; 
-	double jerk;  
-	double heading; //Counterclockwise and in radians
-	double angularVelocity;  
+	public double x, y; 
+	public double time;
+	public double distanceFromStart, 
+				  distanceFromEnd; 
+	public double velocity, 
+				  acceleration, 
+				  jerk;  
+	public double heading, //Counterclockwise and in radians
+				  angularVelocity;  
 	
 	public Waypoint(double x, double y) {
 		this.x = x; 

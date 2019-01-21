@@ -1,7 +1,13 @@
+package Application;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner; 
+import java.util.Scanner;
+
+import Files.Csv;
+import Generation.CenterTraj;
+import Generation.SideTraj;
+import Generation.Waypoint; 
 
 public class Main {
 	public static void main(String[] args) {
@@ -9,8 +15,7 @@ public class Main {
 		System.out.println("First lets do some file stuff"); 
 		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
 		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
-		String mode = "Pulse"; 
-		System.out.print("Export Mode[Pulse/Jaci]: "); mode = scanner.nextLine();
+		//System.out.print("Export Mode[Pulse/Jaci]: "); mode = scanner.nextLine();
 		
 		System.out.println("Next enter some information"); 
 		System.out.print("dt: "); double dt = scanner.nextDouble(); 
@@ -18,7 +23,7 @@ public class Main {
 		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
 		System.out.print("Max Acceleration: "); double maxAcceleration = scanner.nextDouble(); 
 		System.out.print("Max Jerk: "); double maxJerk = scanner.nextDouble();
-		System.out.print("Velocity Correction?[true/false]: "); boolean velCor = scanner.nextBoolean();  
+		//System.out.print("Velocity Correction?[true/false]: "); boolean velCor = scanner.nextBoolean();  
 
 		System.out.print("Then the waypoints\n"
 							+ "Number of waypoints: ");
@@ -29,29 +34,29 @@ public class Main {
 			waypoints[i] = new Waypoint(scanner.nextDouble(), scanner.nextDouble(), d2r(scanner.nextDouble())); 
 		}   
 
-		Path path = new Path(10000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, velCor, waypoints);
-		File paths = new File(fileLocation + "\\" + trajName);
-		paths.mkdir();
-		String central = paths.getPath() + "\\" + trajName + "_central_" + mode + ".csv";
-		String left = paths.getPath() + "\\" + trajName + "_left_" + mode + ".csv";
-		String right = paths.getPath() + "\\" + trajName + "_right_" + mode + ".csv";
+		double startTime = getSec();
+		System.out.println("Generating");
+		CenterTraj centerTraj = new CenterTraj(100000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
+		centerTraj.generate();
+		SideTraj leftTraj = centerTraj.getLeft(); leftTraj.generate();
+		SideTraj rightTraj = centerTraj.getRight(); rightTraj.generate();
+		System.out.println("Finished! " + (getSec() - startTime) + " sec");
+		System.out.println("Exporting");
+		String seperator = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
+		File trajs = new File(fileLocation + seperator + trajName);
+		trajs.mkdir();
+		String centralFile = trajs.getPath() + seperator + trajName + "_central_Pulse.csv";
+		String leftFile = trajs.getPath() + seperator + trajName + "_left_Pulse.csv";
+		String rightFile = trajs.getPath() + seperator + trajName + "_right_Pulse.csv";
 		try {
-			switch(mode) {
-				case "Jaci": 
-					Csv.writeTrajFileJaci(path.getCentralTrajectory(), central, dt);
-					Csv.writeTrajFileJaci(path.getLeftTrajectory(), left, dt);
-					Csv.writeTrajFileJaci(path.getRightTrajectory(), right, dt);
-					break;
-				default: 
-					Csv.writeTrajFilePulse(path.getCentralTrajectory(), central);
-					Csv.writeTrajFilePulse(path.getLeftTrajectory(), left);
-					Csv.writeTrajFilePulse(path.getRightTrajectory(), right);
-					break;
-			}
+			Csv.writeTrajFilePulse(centerTraj.getPath(), centralFile);
+			Csv.writeTrajFilePulse(leftTraj.getPath(), leftFile);
+			Csv.writeTrajFilePulse(rightTraj.getPath(), rightFile);
 		}catch (IOException i) {
 			System.out.println("Invalid file"); 
 			i.printStackTrace();
 		}
+		System.out.println("Finished! " + (getSec() - startTime) + " sec");
 		scanner.close();
 	}
 	
@@ -62,5 +67,9 @@ public class Main {
 	public static double r2d(double radians) {
 		return (radians * 180) / Math.PI; 
 	}	
+	
+	public static long getSec() {
+		return (long) System.currentTimeMillis() / (long) 1000;
+	}
 }
 
