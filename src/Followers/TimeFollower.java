@@ -7,7 +7,7 @@ public class TimeFollower {
 	private ArrayList<Waypoint> trajectory;
 	private int waypointNum; 
 	private double dt; 
-	private double kp, ki, eThreshold, kd, kv, ka; 
+	private double kp, ki, kd, kv, ka; 
 	private double currentError, lastError, errorNum; 
 	
 	public TimeFollower(ArrayList<Waypoint> trajectory) {
@@ -16,7 +16,6 @@ public class TimeFollower {
 		this.dt = trajectory.get(1).time;
 		currentError = 0; 
 		lastError = 0; 
-		errorNum = 0; 
 	}
 	
 	public void setTrajectory(ArrayList<Waypoint> trajectory) {
@@ -32,10 +31,9 @@ public class TimeFollower {
 		errorNum = 0; 
 	}
 	
-	public void configureGains(double kp, double ki, double eThreshold, double kd, double kv, double ka) {
+	public void configureGains(double kp, double ki, double kd, double kv, double ka) {
 		this.kp = kp; 
 		this.ki = ki; 
-		this.eThreshold = Math.abs(eThreshold); 
 		this.kd = kd; 
 		this.kv = kv; 
 		this.ka = ka; 
@@ -47,7 +45,6 @@ public class TimeFollower {
 	
 	public double calculate(double distance) {
 		currentError = getCurrentWaypoint().distanceFromStart - distance;
-		if(Math.abs(currentError) >= eThreshold) errorNum++; 
 		double p = kp * currentError; 
 		double i = ki * errorNum; 
 		double d = kd * ((currentError - lastError) / dt); 

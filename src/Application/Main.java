@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.Scanner;
 
 import Files.Csv;
+import Files.JSON;
+import Files.JSON.JSONArray;
+import Files.JSON.JSONObject;
 import Generation.CenterTraj;
 import Generation.SideTraj;
 import Generation.Waypoint; 
@@ -15,7 +18,6 @@ public class Main {
 		System.out.println("First lets do some file stuff"); 
 		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
 		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
-		//System.out.print("Export Mode[Pulse/Jaci]: "); mode = scanner.nextLine();
 		
 		System.out.println("Next enter some information"); 
 		System.out.print("dt: "); double dt = scanner.nextDouble(); 
@@ -23,7 +25,6 @@ public class Main {
 		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
 		System.out.print("Max Acceleration: "); double maxAcceleration = scanner.nextDouble(); 
 		System.out.print("Max Jerk: "); double maxJerk = scanner.nextDouble();
-		//System.out.print("Velocity Correction?[true/false]: "); boolean velCor = scanner.nextBoolean();  
 
 		System.out.print("Then the waypoints\n"
 							+ "Number of waypoints: ");
@@ -49,14 +50,46 @@ public class Main {
 		String leftFile = trajs.getPath() + seperator + trajName + "_left_Pulse.csv";
 		String rightFile = trajs.getPath() + seperator + trajName + "_right_Pulse.csv";
 		try {
-			Csv.writeTrajFilePulse(centerTraj.getPath(), centralFile);
-			Csv.writeTrajFilePulse(leftTraj.getPath(), leftFile);
-			Csv.writeTrajFilePulse(rightTraj.getPath(), rightFile);
+			Csv.writeTrajFile(centerTraj.getPath(), centralFile);
+			Csv.writeTrajFile(leftTraj.getPath(), leftFile);
+			Csv.writeTrajFile(rightTraj.getPath(), rightFile);
 		}catch (IOException i) {
 			System.out.println("Invalid file"); 
 			i.printStackTrace();
 		}
 		System.out.println("Finished! " + (getSec() - startTime) + " sec");
+		System.out.print("Save?[Y/n]"); 
+		String save = scanner.nextLine();
+		if(scanner.nextLine().toLowerCase().contains("y")) {
+			System.out.println("Saving");
+			String settingsFile = trajs.getPath() + seperator + trajName + ".json";
+			JSONObject data = new JSONObject(); 
+			data.put("Name", trajName);
+			
+			data.put("dt", dt);
+			data.put("Wheel-Base-Width", wheelBase);
+			JSONArray _waypoints = new JSONArray();
+			for(int i = 0; i < waypoints.length; i++) {
+				JSONArray waypoint = new JSONArray();
+				waypoint.add(waypoints[i].x);
+				waypoint.add(waypoints[i].y);
+				// Round to the nearest hundredths so there aren't long numbers
+				waypoint.add(round(r2d(waypoints[i].heading), 2));
+				_waypoints.add(waypoint);
+			}
+			data.put("Waypoints", _waypoints);
+			data.put("Max Velocity", maxVelocity);
+			data.put("Max Acceleration", maxAcceleration);
+			data.put("Max Jerk", maxJerk);
+			
+			try {
+				JSON.writeJSONFile(data, settingsFile);
+			}catch (IOException i) {
+				System.out.println("Invalid file"); 
+				i.printStackTrace();
+			}
+			System.out.println("Finished! " + (getSec() - startTime) + " sec");
+		}
 		scanner.close();
 	}
 	
@@ -67,6 +100,16 @@ public class Main {
 	public static double r2d(double radians) {
 		return (radians * 180) / Math.PI; 
 	}	
+	
+	public static double round(double number, int places) { 
+		int current = (int) (number * Math.pow(10, places)) % 10;
+		int next = (int) (number * Math.pow(10, places + 1)) % 10;
+		double rounded = (int) (number * Math.pow(10, places)) / Math.pow(10, places);
+		if(next >= 5) { 
+			rounded += Math.pow(10, places * -1);  
+		}
+		return rounded; 
+	}
 	
 	public static long getSec() {
 		return (long) System.currentTimeMillis() / (long) 1000;

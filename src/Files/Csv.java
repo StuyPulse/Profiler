@@ -33,29 +33,14 @@ public class Csv {
         return waypoint; 
     }
 
-    public static void writeTrajFilePulse(ArrayList<Waypoint> trajectory, String fileStr) throws IOException {
+    public static void writeTrajFile(ArrayList<Waypoint> trajectory, String fileStr) throws IOException {
+    	if(!fileStr.substring(fileStr.length() - 4, fileStr.length()).equals(".csv")) {
+    		fileStr += ".csv";
+    	}
         BufferedWriter bWriter = getWriter(fileStr); 
         writeLine(bWriter, "time,x,y,distance,velocity,acceleration,jerk,heading");
 		for(int i = 0; i < trajectory.size(); i++) {
 			double time = trajectory.get(i).time;  
-			double x = trajectory.get(i).x; 
-			double y = trajectory.get(i).y;
-			double distance = trajectory.get(i).distanceFromStart;
-			double heading = trajectory.get(i).heading;
-			double velocity = trajectory.get(i).velocity; 
-			double acceleration = trajectory.get(i).acceleration;
-			double jerk = trajectory.get(i).jerk; 
-            writeLine(bWriter, 
-                time + "," + x + "," + y + "," + distance + "," + velocity + "," + acceleration + "," + jerk + "," + heading);
-        } 
-        bWriter.close(); 
-    }
-    
-    public static void writeTrajFileJaci(ArrayList<Waypoint> trajectory, String fileStr, double dt) throws IOException {
-        BufferedWriter bWriter = getWriter(fileStr); 
-        writeLine(bWriter, "dt,x,y,position,velocity,acceleration,jerk,heading");
-		for(int i = 0; i < trajectory.size(); i++) {
-			double time = dt;  
 			double x = trajectory.get(i).x; 
 			double y = trajectory.get(i).y;
 			double distance = trajectory.get(i).distanceFromStart;
