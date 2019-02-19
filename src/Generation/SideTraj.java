@@ -6,7 +6,8 @@ public class SideTraj extends CenterTraj {
 	private double offset; 
 
 	public SideTraj(CenterTraj centerTraj, double offset) {
-		super(centerTraj.sampleRate, 
+		super(centerTraj.method, 
+				centerTraj.sampleRate, 
 				centerTraj.dt, 
 				centerTraj.wheelBaseWidth, 
 				centerTraj.maxVel, 
@@ -54,7 +55,7 @@ public class SideTraj extends CenterTraj {
 		getHeadings();
 						
 		//Velocity and velocity corrections
-		this.getVelocities(); 
+		getVelocities(); 
 			
 		//Accelerations and jerk
 		getAccelerations();  
