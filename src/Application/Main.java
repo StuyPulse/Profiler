@@ -10,7 +10,8 @@ import Files.JSON.JSONArray;
 import Files.JSON.JSONObject;
 import Generation.CenterTraj;
 import Generation.SideTraj;
-import Generation.Waypoint; 
+import Generation.Waypoint;
+import Generation.CenterTraj.FitMethod; 
 
 public class Main {
 	public static void main(String[] args) {
@@ -19,7 +20,18 @@ public class Main {
 		System.out.print("File Destination: "); String fileLocation = scanner.nextLine();
 		System.out.print("Trajectory Name: "); String trajName = scanner.nextLine();
 		
-		System.out.println("Next enter some information"); 
+		System.out.println("Next enter some information");
+		System.out.println("[Cubic Bezier, Cubic Hermite]");
+		System.out.print("Fit Method: "); String m_str = scanner.nextLine();
+		FitMethod method = null; 
+		switch(m_str) {
+			case "Cubic Bezier": 
+				method = FitMethod.CUBIC_BEZIER; 
+				break; 
+			case "Cubic Hermite": 
+				method = FitMethod.CUBIC_HERMITE; 
+				break; 
+		}
 		System.out.print("dt: "); double dt = scanner.nextDouble(); 
 		System.out.print("Wheel Base Width: "); double wheelBase = scanner.nextDouble(); 
 		System.out.print("Max Velocity: "); double maxVelocity = scanner.nextDouble();
@@ -37,7 +49,7 @@ public class Main {
 
 		double startTime = getSec();
 		System.out.println("Generating");
-		CenterTraj centerTraj = new CenterTraj(100000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
+		CenterTraj centerTraj = new CenterTraj(method, 100000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
 		centerTraj.generate();
 		SideTraj leftTraj = centerTraj.getLeft(); leftTraj.generate();
 		SideTraj rightTraj = centerTraj.getRight(); rightTraj.generate();

@@ -1,6 +1,10 @@
 package Generation;
 import java.util.ArrayList;
 
+import Generation.Splines.CubicBezier;
+import Generation.Splines.CubicHermite;
+import Generation.Splines.Spline;
+
 public class CenterTraj {
 	protected ArrayList<Waypoint> traj; 
 	protected Waypoint[] waypoints; 
@@ -10,9 +14,25 @@ public class CenterTraj {
 	protected double wheelBaseWidth;
 	protected double maxVel, 
 				     maxAccel, 
-				     maxJerk;
+					 maxJerk;
+	FitMethod method; 
+	protected Spline spline;
 	
-	public CenterTraj(int sampleRate, double dt, double wheelBaseWidth, double maxVel, double maxAccel, double maxJerk, Waypoint... waypoints) {
+	public enum FitMethod {
+		CUBIC_BEZIER, CUBIC_HERMITE; 
+	}
+	
+	public CenterTraj(FitMethod method, int sampleRate, double dt, double wheelBaseWidth, double maxVel, double maxAccel, double maxJerk, Waypoint... waypoints) {
+		this.method = method; 
+		spline = null; 
+		switch(method) {
+			case CUBIC_BEZIER:
+				spline = new CubicBezier(); 
+				break;
+			case CUBIC_HERMITE:
+				spline = new CubicHermite();  
+				break;  
+		}
 		this.sampleRate = sampleRate; 
 		this.dt = dt; 
 		this.wheelBaseWidth = wheelBaseWidth;
@@ -28,57 +48,11 @@ public class CenterTraj {
 		return traj;
 	}
 	
-	//Finds a point by using cubic bezier
-	/*
-	 * @param the first point on the line
-	 * @param the first control point 
-	 * @param the second control point 
-	 * @param the second point on the line
-	 * @param the percentage of the way on the curve
-	 * @param the percentage of the way on the curve 
-	 */
-	protected Waypoint cubicBezier(Waypoint point1, Waypoint control1, Waypoint control2, Waypoint point2, double alpha) {
-		double x = point1.x * Math.pow(1 - alpha, 3) + control1.x * 3 * Math.pow(1 - alpha, 2) * alpha + 
-					control2.x * 3 * (1 - alpha) * Math.pow(alpha, 2) + point2.x * Math.pow(alpha, 3);
-		double y = point1.y * Math.pow(1 - alpha, 3) + control1.y * 3 * Math.pow(1 - alpha, 2) * alpha + 
-					control2.y * 3 * (1 - alpha) * Math.pow(alpha, 2) + point2.y * Math.pow(alpha, 3);
-		return new Waypoint(x, y); 
+	protected void genPath(double tightness) {
+		curvepoints = spline.getCurvepoints(tightness, waypoints);
+		traj = spline.getPath(sampleRate, curvepoints);
 	}
-	
-	//Finds all the points on the path
-	/*
-	 * @param the number of points between each pair of waypoints
-	 * @param the tightness of the curve
-	 * @param the trajectory on which to load the points
-	 * @param the array on which to load the curvepoints
-	 * @param the waypoints from which the path with be generated
-	 */
-	protected void genBezierPath(double tightness) {
-		traj.add(waypoints[0]);
-		for(int i = 0; i < waypoints.length - 1; i++) {
-			Waypoint startwp = waypoints[i]; 
-			Waypoint endwp = waypoints[i + 1];
-			double distance = startwp.distanceTo(endwp);
-			double gplength = distance / 2 * tightness; 
-			Waypoint startOffset = Waypoint.PolarPoint(gplength, startwp.heading);
-			Waypoint endOffset = Waypoint.PolarPoint(-gplength, endwp.heading);
-			Waypoint control1 = startwp.offset(startOffset.x, startOffset.y);
-			Waypoint control2 = endwp.offset(endOffset.x, endOffset.y);
-			
-			curvepoints[i][0] = startwp; 
-			curvepoints[i][1] = control1;
-			curvepoints[i][2] = control2;
-			curvepoints[i][3] = endwp;  
-			for(int j = 1; j < sampleRate; j++) {
-				double percentage = (double) j / (double) sampleRate;
-				Waypoint pathPoint = cubicBezier(startwp, control1, control2, endwp, percentage); 
-				traj.add(pathPoint);
-			}
-			traj.add(endwp);
-			//The latest added point which is a path point is true
-		}
-	}
-	
+
 	//Gets the distances from the start, of each waypoint
 	//Requires that all the curvepoints be generated already
 	protected void getDistancesFromStart() {
@@ -266,7 +240,7 @@ public class CenterTraj {
 			//Find the curve that the new point belongs to
 			curve = index / sampleRate;   
 			//Get the point with bezier curves
-			Waypoint point = cubicBezier(curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3], percentage);
+			Waypoint point = spline.getWaypoint(percentage, curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3]);
 			point.time = time; 
 			traj.add(point); 
 		}
@@ -288,7 +262,7 @@ public class CenterTraj {
 	
 	public void generate() {
 		//Path values
-		genBezierPath(0.8);
+		genPath(0.8);
 		getDistancesFromStart(); 
 		getDistancesFromEnd(); 
 		getHeadings();
