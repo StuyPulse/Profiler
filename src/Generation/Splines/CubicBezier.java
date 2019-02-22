@@ -4,8 +4,20 @@ import Generation.Waypoint;
 
 public class CubicBezier extends Spline {
 
+	/*
+	 * Requires at least four points P1, C1, C2, P2 in that order
+	 * P1 is the first point on the curve
+	 * C1 is the first control point and lies on the line tangent to P1 
+	 * C2 is the second control point and lies on the line tangent to P2
+	 * P2 is the last point on the curve
+	 * Any more points will be ignored!
+	 */
+	//More information about the math can be found here: https://pomax.github.io/bezierinfo/
     @Override
     public Waypoint getWaypoint(double alpha, Waypoint... waypoints) {
+    	if(waypoints.length < 4) { 
+    		return null; 
+    	}
         double x = waypoints[0].x * Math.pow(1 - alpha, 3) + waypoints[1].x * 3 * Math.pow(1 - alpha, 2) * alpha + 
 					waypoints[2].x * 3 * (1 - alpha) * Math.pow(alpha, 2) + waypoints[3].x * Math.pow(alpha, 3);
 		double y = waypoints[0].y * Math.pow(1 - alpha, 3) + waypoints[1].y * 3 * Math.pow(1 - alpha, 2) * alpha + 
@@ -14,7 +26,14 @@ public class CubicBezier extends Spline {
     }
 
     @Override
-    public Waypoint[][] getCurvepoints(double tightness, Waypoint... waypoints) {
+    public Waypoint[][] getCurvepoints(Waypoint... waypoints) {
+    	if(waypoints.length < 2) {
+    		System.out.println("Not enough points");
+    		return null;
+    	}
+    	//taken from team 3641's method of calculating bezier curves found here: 
+    	//https://github.com/JackToaster/FlyingToasters2018/blob/master/src/path_generation/Path.java
+    	double tightness = 0.8; 
         Waypoint[][] curvepoints = new Waypoint[waypoints.length - 1][4];
 		for(int i = 0; i < waypoints.length - 1; i++) {
 			Waypoint startwp = waypoints[i]; 

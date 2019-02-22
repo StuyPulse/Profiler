@@ -70,16 +70,17 @@ public class Main {
 			i.printStackTrace();
 		}
 		System.out.println("Finished! " + (getSec() - startTime) + " sec");
-		System.out.print("Save?[Y/n]"); 
+		System.out.print("Save?[Y/n]");
 		String save = scanner.nextLine();
 		if(scanner.nextLine().toLowerCase().contains("y")) {
 			System.out.println("Saving");
 			String settingsFile = trajs.getPath() + seperator + trajName + ".json";
 			JSONObject data = new JSONObject(); 
+		
 			data.put("Name", trajName);
-			
+			data.put("Fit Method", method.toString());
 			data.put("dt", dt);
-			data.put("Wheel-Base-Width", wheelBase);
+			data.put("Wheel Base Width", wheelBase);
 			JSONArray _waypoints = new JSONArray();
 			for(int i = 0; i < waypoints.length; i++) {
 				JSONArray waypoint = new JSONArray();
@@ -100,8 +101,8 @@ public class Main {
 				System.out.println("Invalid file"); 
 				i.printStackTrace();
 			}
-			System.out.println("Finished! " + (getSec() - startTime) + " sec");
 		}
+		System.out.println("Finished! " + (getSec() - startTime) + " sec");
 		scanner.close();
 	}
 	

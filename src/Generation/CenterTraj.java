@@ -1,5 +1,6 @@
 package Generation;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import Generation.Splines.CubicBezier;
 import Generation.Splines.CubicHermite;
@@ -48,8 +49,8 @@ public class CenterTraj {
 		return traj;
 	}
 	
-	protected void genPath(double tightness) {
-		curvepoints = spline.getCurvepoints(tightness, waypoints);
+	protected void genPath() {
+		curvepoints = spline.getCurvepoints(waypoints);
 		traj = spline.getPath(sampleRate, curvepoints);
 	}
 
@@ -89,6 +90,8 @@ public class CenterTraj {
 	/*
 	 * @param if velocity should be restrained or not at turns
 	 */
+	//adapted from jackfel's (team 3641) white paper which explains how to find velocity found here: 
+	//https://www.chiefdelphi.com/t/how-does-a-robot-pathfinder-motion-profiler-work/165533
 	protected void getVelocities() {  
 		for(int i = 0; i < traj.size(); i++) { 
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
@@ -194,6 +197,7 @@ public class CenterTraj {
 			double outside = traj.get(i).velocity + velDiff;
 			if(outside > maxVel) {
 				//lower the velocity but keep the same proportion
+				//thank you to adrisj (PoSE 2017-18 of 694) for the idea 
 				traj.get(i).velocity = traj.get(i).velocity * maxVel / outside; 
 			}
 		}
@@ -240,7 +244,7 @@ public class CenterTraj {
 			//Find the curve that the new point belongs to
 			curve = index / sampleRate;   
 			//Get the point with bezier curves
-			Waypoint point = spline.getWaypoint(percentage, curvepoints[curve][0], curvepoints[curve][1], curvepoints[curve][2], curvepoints[curve][3]);
+			Waypoint point = spline.getWaypoint(percentage, curvepoints[curve]);
 			point.time = time; 
 			traj.add(point); 
 		}
@@ -262,7 +266,7 @@ public class CenterTraj {
 	
 	public void generate() {
 		//Path values
-		genPath(0.8);
+		genPath();
 		getDistancesFromStart(); 
 		getDistancesFromEnd(); 
 		getHeadings();

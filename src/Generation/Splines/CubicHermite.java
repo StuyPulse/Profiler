@@ -4,11 +4,16 @@ import Generation.Waypoint;
 
 public class CubicHermite extends Spline {
 
-    //Accepts four points P1, P2, T1, T2
-    //P1 is first point
-    //P2 is last point
-    //T1 is a vector containing derivatives at P1
-    //T2 is a vector containing derivatives at P2
+    /*
+     * Requires at least four points P1, P2, T1, T2 in that order
+     * P1 is the first point on the curve
+     * P2 is the last point on the curve
+     * T1 is a vector with xy derivatives at P1
+     * T2 is a vector with xy derivatives at P2
+     * Any more points will be ignored!
+     */
+	//More information about the math can be found here: http://www.cs.cornell.edu/courses/cs4620/2012fa/lectures/28splines.pdf
+	//And here: https://www.cubic.org/docs/hermite.htm
     @Override
     public Waypoint getWaypoint(double alpha, Waypoint... waypoints) {
         double h1 = 2 * Math.pow(alpha, 3) - 3 * Math.pow(alpha, 2) + 1; 
@@ -23,32 +28,25 @@ public class CubicHermite extends Spline {
     }
 
     @Override
-    public Waypoint[][] getCurvepoints(double tightness, Waypoint... waypoints) {
-        Waypoint[][] curvepoints = new Waypoint[waypoints.length - 1][4];
-
-        double t1x = waypoints[1].x - waypoints[0].x;
-        double t2x = 0.5 * (waypoints[2].x - waypoints[0].x);
-        curvepoints[0][0] = waypoints[0];
-        curvepoints[0][1] = waypoints[1];
-        curvepoints[0][2] = new Waypoint(t1x, t1x * Math.tan(waypoints[0].heading));
-        curvepoints[0][3] = new Waypoint(t2x, t2x * Math.tan(waypoints[1].heading));
-
-        for(int i = 1; i < curvepoints.length - 1; i++) {
-            curvepoints[i][0] = waypoints[i];
-            curvepoints[i][1] = waypoints[i+1];
-            t1x = 0.5 * (waypoints[i+1].x - waypoints[i-1].x);
-            curvepoints[i][2] = new Waypoint(t1x, t1x * Math.tan(waypoints[i].heading));
-            t2x = 0.5 * (waypoints[i+2].x - waypoints[i].x);
-            curvepoints[i][3] = new Waypoint(t2x, t2x * Math.tan(waypoints[i].heading));
-        }
-
-        int len = waypoints.length;
-        t1x = 0.5 * (waypoints[len - 1].x - waypoints[len - 3].x);
-        t2x = waypoints[len - 1].x - waypoints[len - 2].x;
-        curvepoints[len - 1][0] = waypoints[len - 2];
-        curvepoints[len - 1][1] = waypoints[len - 1];
-        curvepoints[len - 1][2] = new Waypoint(t1x, t1x * Math.tan(waypoints[len - 2].heading));
-        curvepoints[len - 1][3] = new Waypoint(t2x, t2x * Math.tan(waypoints[len - 1].heading));
+    public Waypoint[][] getCurvepoints(Waypoint... waypoints) {
+    	if(waypoints.length < 2) {
+    		System.out.println("Not enough points");
+    		return null;
+    	}
+    	Waypoint[][] curvepoints = new Waypoint[waypoints.length - 1][4];
+    	for(int i = 0; i < curvepoints.length; i++) {
+    		//taken from 254 cubic spline generation code: 
+    		//https://github.com/Team254/FRC-2018-Public/blob/master/cheesy-path/src/main/java/com/team254/lib/spline/CubicHermiteSpline.java
+    		double scale = 2 * waypoints[i].distanceTo(waypoints[i+1]);
+    		//these are the waypoints themselves
+    		curvepoints[i][0] = waypoints[i]; 
+    		curvepoints[i][1] = waypoints[i+1]; 
+    		//these are more or less vectors containing the derivatives at the two points
+    		//atan2(dy, dx) = heading
+    		//so, cos(heading) * scale = dx and sin(heading) * scale = dy 
+    		curvepoints[i][2] = new Waypoint(Math.cos(waypoints[i].heading) * scale, Math.sin(waypoints[i].heading) * scale);
+    		curvepoints[i][3] = new Waypoint(Math.cos(waypoints[i+1].heading) * scale, Math.sin(waypoints[i+1].heading) * scale);
+    	}
         return curvepoints;
     }
 
