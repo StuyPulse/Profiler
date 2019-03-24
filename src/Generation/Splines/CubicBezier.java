@@ -26,14 +26,13 @@ public class CubicBezier extends Spline {
     }
 
     @Override
-    public Waypoint[][] getCurvepoints(Waypoint... waypoints) {
+    public Waypoint[][] getCurvepoints(double tightness, Waypoint... waypoints) {
     	if(waypoints.length < 2) {
     		System.out.println("Not enough points");
     		return null;
     	}
     	//taken from team 3641's method of calculating bezier curves found here: 
     	//https://github.com/JackToaster/FlyingToasters2018/blob/master/src/path_generation/Path.java
-    	double tightness = 0.8; 
         Waypoint[][] curvepoints = new Waypoint[waypoints.length - 1][4];
 		for(int i = 0; i < waypoints.length - 1; i++) {
 			Waypoint startwp = waypoints[i]; 

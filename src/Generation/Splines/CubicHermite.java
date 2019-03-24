@@ -28,16 +28,18 @@ public class CubicHermite extends Spline {
     }
 
     @Override
-    public Waypoint[][] getCurvepoints(Waypoint... waypoints) {
+    public Waypoint[][] getCurvepoints(double tightness, Waypoint... waypoints) {
     	if(waypoints.length < 2) {
     		System.out.println("Not enough points");
     		return null;
     	}
+		//taken from 254 cubic spline generation code: 
+		//https://github.com/Team254/FRC-2018-Public/blob/master/cheesy-path/src/main/java/com/team254/lib/spline/CubicHermiteSpline.java
     	Waypoint[][] curvepoints = new Waypoint[waypoints.length - 1][4];
     	for(int i = 0; i < curvepoints.length; i++) {
-    		//taken from 254 cubic spline generation code: 
-    		//https://github.com/Team254/FRC-2018-Public/blob/master/cheesy-path/src/main/java/com/team254/lib/spline/CubicHermiteSpline.java
-    		double scale = 2 * waypoints[i].distanceTo(waypoints[i+1]);
+    		//scaling is just like with bezier curves except that it is x3 explanation can be found below: 
+    		//http://www2.cs.uregina.ca/~anima/408/Notes/Interpolation/BezierDerivation.htm
+    		double scale = waypoints[i].distanceTo(waypoints[i+1]) / 2 * tightness * 3;
     		//these are the waypoints themselves
     		curvepoints[i][0] = waypoints[i]; 
     		curvepoints[i][1] = waypoints[i+1]; 

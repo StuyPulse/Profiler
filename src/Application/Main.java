@@ -49,7 +49,7 @@ public class Main {
 
 		double startTime = getSec();
 		System.out.println("Generating");
-		CenterTraj centerTraj = new CenterTraj(method, 100000, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
+		CenterTraj centerTraj = new CenterTraj(method, 100000, 0.8, dt, wheelBase, maxVelocity, maxAcceleration, maxJerk, waypoints);
 		centerTraj.generate();
 		SideTraj leftTraj = centerTraj.getLeft(); leftTraj.generate();
 		SideTraj rightTraj = centerTraj.getRight(); rightTraj.generate();

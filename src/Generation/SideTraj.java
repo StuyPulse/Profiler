@@ -8,6 +8,7 @@ public class SideTraj extends CenterTraj {
 	public SideTraj(CenterTraj centerTraj, double offset) {
 		super(centerTraj.method, 
 				centerTraj.sampleRate, 
+				centerTraj.tightness,
 				centerTraj.dt, 
 				centerTraj.wheelBaseWidth, 
 				centerTraj.maxVel, 

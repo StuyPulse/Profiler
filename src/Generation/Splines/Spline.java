@@ -7,7 +7,7 @@ import Generation.Waypoint;
 public abstract class Spline {
     public abstract Waypoint getWaypoint(double alpha, Waypoint... waypoints);
     
-    public abstract Waypoint[][] getCurvepoints(Waypoint... waypoints);
+    public abstract Waypoint[][] getCurvepoints(double tightness, Waypoint... waypoints);
 
     public ArrayList<Waypoint> getPath(double sampleRate, Waypoint[][] curvepoints) {
         ArrayList<Waypoint> traj = new ArrayList<Waypoint>();

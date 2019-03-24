@@ -11,6 +11,7 @@ public class CenterTraj {
 	protected Waypoint[] waypoints; 
 	protected Waypoint[][] curvepoints;
 	protected int sampleRate; 
+	protected double tightness; 
 	protected double dt;
 	protected double wheelBaseWidth;
 	protected double maxVel, 
@@ -23,7 +24,7 @@ public class CenterTraj {
 		CUBIC_BEZIER, CUBIC_HERMITE; 
 	}
 	
-	public CenterTraj(FitMethod method, int sampleRate, double dt, double wheelBaseWidth, double maxVel, double maxAccel, double maxJerk, Waypoint... waypoints) {
+	public CenterTraj(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVel, double maxAccel, double maxJerk, Waypoint... waypoints) {
 		this.method = method; 
 		spline = null; 
 		switch(method) {
@@ -35,6 +36,7 @@ public class CenterTraj {
 				break;  
 		}
 		this.sampleRate = sampleRate; 
+		this.tightness = tightness; 
 		this.dt = dt; 
 		this.wheelBaseWidth = wheelBaseWidth;
 		this.maxVel = maxVel; 
@@ -50,7 +52,7 @@ public class CenterTraj {
 	}
 	
 	protected void genPath() {
-		curvepoints = spline.getCurvepoints(waypoints);
+		curvepoints = spline.getCurvepoints(tightness, waypoints);
 		traj = spline.getPath(sampleRate, curvepoints);
 	}
 
@@ -79,7 +81,11 @@ public class CenterTraj {
 	//Requires that all the curvepoints be generated already
 	protected void getHeadings() {
 		for(int i = 0; i < traj.size() - 1; i++) {
-			traj.get(i).heading = Math.atan2(traj.get(i + 1).y - traj.get(i).y, traj.get(i + 1).x - traj.get(i).x); 
+			//use atan2 to find the angle between two points on the path
+			//this is effectivly the heading the robot is pointing from one point to another
+			traj.get(i).heading = Math.atan2(traj.get(i + 1).y - traj.get(i).y, traj.get(i + 1).x - traj.get(i).x);
+			//atan2 only returns from the range -PI to PI, so here is a fix to get pos values
+			traj.get(i).heading = (2 * Math.PI + traj.get(i).heading) % (2 * Math.PI); 
 		}
 		traj.get(traj.size() - 1).heading = waypoints[waypoints.length - 1].heading; 
 	}
@@ -100,7 +106,7 @@ public class CenterTraj {
 			double cruiseVel = maxVel; 
 			double decelVel = Math.sqrt(2 * maxAccel * traj.get(i).distanceFromEnd);
 			
-			//Sets the velocity to the minium of these
+			//Sets the velocity to the minimum of these
 			double lowest = Math.min(Math.min(accelVel, cruiseVel), decelVel);
 			if(lowest == accelVel) {
 				traj.get(i).velocity = accelVel;  
