@@ -2,17 +2,18 @@ package main;
 
 import gen.Trajectory;
 import gen.Waypoint;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.json.simple.JSONArray;
@@ -57,6 +58,7 @@ public class Gui {
         TextField theta = new TextField();
         root.getChildren().add(new HBox(new Label("Angle: "), theta));
         Button confirm = new Button("OK");
+
         confirm.setOnAction((e) -> {
             try {
                 this.x.getItems().add(Double.toString(Double.parseDouble(x.getText())));
@@ -67,6 +69,13 @@ public class Gui {
                 System.out.println("not a number!!!");
             }
         });
+        x.setOnAction((e) -> y.requestFocus());
+        x.setOnKeyPressed((ke) -> { if(y.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) prompt.close(); });
+        y.setOnAction((e) -> theta.requestFocus());
+        y.setOnKeyPressed((ke) -> { if(y.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) x.requestFocus(); });
+        theta.setOnAction((e) -> confirm.fire());
+        theta.setOnKeyPressed((ke) -> { if(theta.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) y.requestFocus(); });
+
         root.getChildren().add(confirm);
         root.setSpacing(10);
         root.setAlignment(Pos.CENTER);
@@ -194,29 +203,35 @@ public class Gui {
         spline.getItems().add("cubic bezier");
         spline.setValue("cubic hermite");
 
-        x.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                int index = x.getSelectionModel().getSelectedIndices().get(0);
-                y.getSelectionModel().select(index);
-                angle.getSelectionModel().select(index);
-            }
+        x.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            int index = x.getSelectionModel().getSelectedIndices().get(0);
+            y.getSelectionModel().select(index);
+            angle.getSelectionModel().select(index);
         });
-        y.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                int index = y.getSelectionModel().getSelectedIndices().get(0);
-                x.getSelectionModel().select(index);
-                angle.getSelectionModel().select(index);
-            }
+        y.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            int index = y.getSelectionModel().getSelectedIndices().get(0);
+            x.getSelectionModel().select(index);
+            angle.getSelectionModel().select(index);
         });
-        angle.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                int index = angle.getSelectionModel().getSelectedIndices().get(0);
-                x.getSelectionModel().select(index);
-                y.getSelectionModel().select(index);
-            }
+        angle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            int index = angle.getSelectionModel().getSelectedIndices().get(0);
+            x.getSelectionModel().select(index);
+            y.getSelectionModel().select(index);
         });
+
+        StringConverter<String> converter = new StringConverter<String>() {
+            @Override
+            public String toString(String object) {
+                return Double.toString(Double.parseDouble(object));
+            }
+
+            @Override
+            public String fromString(String string) {
+                return string;
+            }
+        };
+        x.setCellFactory(TextFieldListCell.forListView(converter));
+        y.setCellFactory(TextFieldListCell.forListView(converter));
+        angle.setCellFactory(TextFieldListCell.forListView(converter));
     }
 }

@@ -73,11 +73,10 @@ public class Trajectory {
 		}*/
 		double distance = 0;
 		traj.get(0).distanceFromStart = distance;
-		Waypoint[] lastSpline = traj.get(0).spline;
 		for(int i = 1; i < traj.size(); i++) {
 			double travelled = spline.integrate(0, traj.get(i).alpha, traj.get(i).spline);
-			if(!Arrays.equals(traj.get(i).spline, lastSpline)) {
-				distance += spline.integrate(0, 1, lastSpline);
+			if(!Arrays.equals(traj.get(i).spline, traj.get(i-1).spline)) {
+				distance += spline.integrate(0, 1, traj.get(i-1).spline);
 			}
 			travelled += distance;
 			traj.get(i).distanceFromStart = travelled;
@@ -108,10 +107,6 @@ public class Trajectory {
 	
 	//Gets the velocity and acceleration of the curvepoints under a trapezodial motion profile for the central path
 	//Requires that the distances be found
-	//To do velocity corrections angular velocities must be found
-	/*
-	 * @param if velocity should be restrained or not at turns
-	 */
 	//adapted from jackfel's (team 3641) white paper which explains how to find velocity found here: 
 	//https://www.chiefdelphi.com/t/how-does-a-robot-pathfinder-motion-profiler-work/165533
 	private void getVelocities() {
