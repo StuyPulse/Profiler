@@ -1,5 +1,6 @@
 package main;
 
+import followers.Port;
 import gen.Trajectory;
 import gen.Waypoint;
 import javafx.fxml.FXML;
@@ -118,16 +119,9 @@ public class Gui {
                     waypoints);
             trajectory.generate();
 
-            CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT);
-            printer.printRecord("time", "x", "y", "distance", "velocity", "acceleration", "jerk", "heading");
-            for(Waypoint pt : trajectory.getPath()) {
-                printer.printRecord(pt.time, pt.x, pt.y, pt.distanceFromStart, pt.velocity, pt.acceleration, pt.jerk, Math.toDegrees(pt.heading));
-            }
-            printer.close();
+            Port.exportCSV(file, trajectory);
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");
-        }catch (IOException io) {
-            System.out.println("invalid file!!!");
         }
     }
 

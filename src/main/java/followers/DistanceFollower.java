@@ -3,17 +3,15 @@ import gen.Waypoint;
 import java.util.*;
 import java.io.*;
 
-public class DistanceFollower extends Path {
+public class DistanceFollower {
     private double kp, ki, kd, kv, ka;
-    private double last_error, heading;
-    private int atPoint;
+    private double previousError, heading;
+    private int currentPoint;
     private Waypoint[] targetPoints;
     private double dt;
 
-    public DistanceFollower(String file) {
-        super(new File(file));
-        targetPoints = getTargetPoints();
-        dt = getDt();
+    public DistanceFollower(File csvData) {
+        targetPoints = Port.importCSV(csvData);
     }
 
     public void configurePIDVA(double kp, double ki, double kd, double kv, double ka) {
@@ -22,34 +20,34 @@ public class DistanceFollower extends Path {
     }
 
     private void reset() {
-        last_error = 0;
-        atPoint = 0;
+        previousError = 0;
+        currentPoint = 0;
     }
 
-    public double calculate(double distance_covered) {
-        if(targetPoints.length > atPoint) {
-            Waypoint point = targetPoints[atPoint];
-            double error = point.distanceFromStart - distance_covered;
+    public double distancePIDVA(double distanceCovered) {
+        dt = targetPoints[1].time;
+        if(targetPoints.length > currentPoint) {
+            Waypoint point = targetPoints[currentPoint];
+            double distanceError = point.distanceFromStart - distanceCovered;
             double calculated_value =
-                    kp * error + kd * ((error - last_error) / dt) +
+                    kp * distanceError + kd * ((distanceError - previousError) / dt) +
                             (kv * point.velocity + ka * point.acceleration);
-            last_error = error;
-            heading = point.heading;
-            atPoint++;
+            previousError = distanceError;
+            currentPoint++;
             return calculated_value;
         } else return 0;
     }
 
     public double getHeading() {
-        return heading;
+        return targetPoints[currentPoint].heading;
     }
 
     public Waypoint getWaypoint() {
-        return targetPoints[atPoint];
+        return targetPoints[currentPoint];
     }
 
     public boolean isFinished() {
-        return atPoint >= targetPoints.length;
+        return currentPoint >= targetPoints.length;
     }
 
 }
