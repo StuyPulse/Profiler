@@ -1,6 +1,7 @@
 package main;
 
-import followers.Port;
+import Files.CSV;
+import Files.Port;
 import gen.Trajectory;
 import gen.Waypoint;
 import javafx.fxml.FXML;
@@ -15,8 +16,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -24,7 +23,6 @@ import org.json.simple.parser.JSONParser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -119,7 +117,7 @@ public class Gui {
                     waypoints);
             trajectory.generate();
 
-            Port.exportCSV(file, trajectory);
+            CSV.exportCSV(file, trajectory);
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");
         }

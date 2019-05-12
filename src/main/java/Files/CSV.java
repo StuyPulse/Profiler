@@ -1,4 +1,4 @@
-package followers;
+package Files;
 import gen.Trajectory;
 import gen.Waypoint;
 import org.apache.commons.csv.*;
@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.io.*;
 
-public class Port {
+public class CSV {
 
     public static Waypoint[] importCSV (File csvData) {
         try {

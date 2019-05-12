@@ -1,6 +1,7 @@
 package followers;
+import Files.CSV;
 import gen.Waypoint;
-import java.util.*;
+
 import java.io.*;
 
 public class DistanceFollower {
@@ -11,7 +12,7 @@ public class DistanceFollower {
     private double dt;
 
     public DistanceFollower(File csvData) {
-        targetPoints = Port.importCSV(csvData);
+        targetPoints = CSV.importCSV(csvData);
     }
 
     public void configurePIDVA(double kp, double ki, double kd, double kv, double ka) {
@@ -24,10 +25,10 @@ public class DistanceFollower {
         currentPoint = 0;
     }
 
-    public double distancePIDVA(double distanceCovered) {
+    public double update(double distanceCovered) {
         dt = targetPoints[1].time;
         if(targetPoints.length > currentPoint) {
-            Waypoint point = targetPoints[currentPoint];
+            Waypoint point = getWaypoint();
             double distanceError = point.distanceFromStart - distanceCovered;
             double calculated_value =
                     kp * distanceError + kd * ((distanceError - previousError) / dt) +
