@@ -1,136 +1,98 @@
 package gen;
 
-import gen.splines.CubicBezier;
-import gen.splines.CubicHermite;
-import gen.splines.Spline;
+import gen.segments.CubicBezierSegment.CubicBezierSegmentFactory;
+import gen.segments.CubicHermiteSegment.CubicHermiteSegmentFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Trajectory {
 	private ArrayList<Waypoint> traj;
-	private Waypoint[] waypoints;
-	private int sampleRate;
-	private double tightness;
-	private double dt;
-	private double wheelBaseWidth;
-	private double maxVel,
-				     maxAccel,
-					 maxJerk;
-	private Spline spline;
 
-	public enum FitMethod {
-		CUBIC_BEZIER, CUBIC_HERMITE;
+	public final int sampleRate;
+	public final double dt;
+	public final double wheelBaseWidth;
+	public final double maxVelocity, maxAcceleration, maxJerk;
+	public final FitMethod method;
+	public final Spline spline;
 
-		public static FitMethod getMethod(String method) {
-			switch (method.toLowerCase()) {
-				case "cubic bezier":
-					return FitMethod.CUBIC_BEZIER;
-				default:
-					return FitMethod.CUBIC_HERMITE;
-			}
-		}
-	}
-
-	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVel, double maxAccel, double maxJerk, Waypoint... waypoints) {
-		spline = null; 
+	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
+		this.method = method;
 		switch(method) {
 			case CUBIC_BEZIER:
-				spline = new CubicBezier(); 
+				spline = new Spline(tightness, new CubicBezierSegmentFactory(), waypoints);
 				break;
-			case CUBIC_HERMITE:
-				spline = new CubicHermite();  
-				break;  
+			default:
+				spline = new Spline(tightness, new CubicHermiteSegmentFactory(), waypoints);
+				break;
 		}
-		this.sampleRate = sampleRate; 
-		this.tightness = tightness; 
-		this.dt = dt; 
+		this.sampleRate = sampleRate;
+		this.dt = dt;
 		this.wheelBaseWidth = wheelBaseWidth;
-		this.maxVel = maxVel; 
-		this.maxAccel = maxAccel; 
-		this.maxJerk = maxJerk; 
+		this.maxVelocity = maxVelocity;
+		this.maxAcceleration = maxAcceleration;
+		this.maxJerk = maxJerk;
 		traj = new ArrayList<>();
-		this.waypoints = waypoints;
 	}
 
-	public ArrayList<Waypoint> getPath() {
-		return traj;
-	}
-	
-	private void genPath() {
-		traj = spline.getPath(sampleRate, spline.getSplines(tightness, waypoints));
+	public ArrayList<Waypoint> getPoints() {
+		ArrayList<Waypoint> clone = new ArrayList<>(traj.size());
+		for (int i = 0; i < traj.size(); i++) {
+			clone.set(i, traj.get(i).clone());
+		}
+		return clone;
 	}
 
-	//Gets the distances from the start, of each waypoint
-	//Requires that all the points be generated already
-	private void getDistancesFromStart() {
-		/*double totalDistance = 0;
-		traj.get(0).distanceFromStart = totalDistance;
-		for(int i = 1; i < traj.size(); i++) {
-			double distance = traj.get(i).distanceTo(traj.get(i - 1));
-			totalDistance += distance;
-			traj.get(i).distanceFromStart = totalDistance;
-		}*/
-		double distance = 0;
-		traj.get(0).distanceFromStart = distance;
-		for(int i = 1; i < traj.size(); i++) {
-			double travelled = spline.integrate(0, traj.get(i).alpha, traj.get(i).spline);
-			if(!Arrays.equals(traj.get(i).spline, traj.get(i-1).spline)) {
-				distance += spline.integrate(0, 1, traj.get(i-1).spline);
-			}
-			travelled += distance;
-			traj.get(i).distanceFromStart = travelled;
+	// samples the spline by finding sampleRate # of points per segment
+	private void sample() {
+		if (!traj.isEmpty()) traj.clear();
+		int NUMBER_OF_POINTS = sampleRate * spline.size();
+		for (int i = 0; i <= NUMBER_OF_POINTS; i++) {
+			double a = (double) i / NUMBER_OF_POINTS;
+			traj.add(spline.getWaypoint(a));
 		}
 	}
-	
-	//Gets the distances from the end, of each waypoint
-	//Requires that the distances from the start be calculated
-	private void getDistancesFromEnd() {
-		double totalDistance = traj.get(traj.size() - 1).distanceFromStart;
-		for(Waypoint point : traj) {
-			point.distanceFromEnd = totalDistance - point.distanceFromStart;
-		}
-	}
-	
-	//Gets the headings of each waypoint counterclockwise in radians
-	//Requires that all the points be generated already
-	private void getHeadings() {
-		for(Waypoint point : traj) {
-			//find the tangents (or derivatives)
-			Waypoint tangent = spline.differentiate(point.alpha, point.spline);
-			//heading = atan2(dy, dx)
-			point.heading = Math.atan2(tangent.y, tangent.x);
-			//atan2 only returns from the range -PI to PI, so here is a fix to get pos values
-			point.heading = (2 * Math.PI + point.heading) % (2 * Math.PI);
-		}
-	}
-	
-	//Gets the velocity and acceleration of the curvepoints under a trapezodial motion profile for the central path
-	//Requires that the distances be found
-	//adapted from jackfel's (team 3641) white paper which explains how to find velocity found here: 
-	//https://www.chiefdelphi.com/t/how-does-a-robot-pathfinder-motion-profiler-work/165533
+
+	// adapted from jackfel's (team 3641) white paper which explains how to find velocity found here:
+	// https://www.chiefdelphi.com/t/how-does-a-robot-pathfinder-motion-profiler-work/165533
 	private void getVelocities() {
 		for (Waypoint waypoint : traj) {
 			//Gets the velocity for the accelerating, cruise, and decelerating cases
 			//Using the kinematic equation Vf^2 = Vi^2 + 2ad
-			double accelVel = Math.sqrt(2 * maxAccel * waypoint.distanceFromStart);
-			double cruiseVel = maxVel;
-			double decelVel = Math.sqrt(2 * maxAccel * waypoint.distanceFromEnd);
+			double accelerate = Math.sqrt(2 * maxAcceleration * waypoint.distanceFromStart);
+			double cruise = maxVelocity;
+			double decelerate = Math.sqrt(2 * maxAcceleration * waypoint.distanceFromEnd);
 
 			//Sets the velocity to the minimum of these
-			double lowest = Math.min(Math.min(accelVel, cruiseVel), decelVel);
-			if (lowest == accelVel) {
-				waypoint.velocity = accelVel;
-			} else if (lowest == cruiseVel) {
-				waypoint.velocity = cruiseVel;
+			double lowest = Math.min(Math.min(accelerate, cruise), decelerate);
+			if (lowest == accelerate) {
+				waypoint.velocity = accelerate;
+			} else if (lowest == cruise) {
+				waypoint.velocity = cruise;
 			} else {
-				waypoint.velocity = decelVel;
+				waypoint.velocity = decelerate;
 			}
 		}
 	}
 
-	//Gets the time by which it will take the robot to be at that point
-	//Requires that the distances and velocities be found
+	private void getAccelerations() {
+		traj.get(0).acceleration = 0;
+		for(int i = 1; i < traj.size(); i++) {
+			double velocityDiff = traj.get(i).velocity - traj.get(i - 1).velocity;
+			if(velocityDiff == 0) {
+				traj.get(i).acceleration = 0;
+				continue;
+			}
+			double timeDiff = traj.get(i).time - traj.get(i - 1).time;
+			traj.get(i).acceleration = velocityDiff / timeDiff;
+
+			if (traj.get(i).acceleration > maxAcceleration) {
+				traj.get(i).acceleration = maxAcceleration;
+			} else if (traj.get(i).acceleration < -maxAcceleration) {
+				traj.get(i).acceleration = -maxAcceleration;
+			}
+		}
+	}
+
 	private void getTimes() {
 		double totalTime = 0;
 		traj.get(0).time = totalTime;
@@ -145,29 +107,32 @@ public class Trajectory {
 		}
 	}
 
-	//Gets the accelerations for the central path
-	//Requires that velocities and times be found
-	private void getAccelerations() {
-		traj.get(0).acceleration = 0; 
-		for(int i = 1; i < traj.size(); i++) {
-			double velocityDiff = traj.get(i).velocity - traj.get(i - 1).velocity;
-			if(velocityDiff == 0) {
-				traj.get(i).acceleration = 0; 
-				continue; 
-			} 
-			double timeDiff = traj.get(i).time - traj.get(i - 1).time; 
-			traj.get(i).acceleration = velocityDiff / timeDiff;
+	// time Parameterize the trajectory such that points are a certain time away
+	private void timeParameterize() {
+		double totalTime = traj.get(traj.size() - 1).time;
+		// delete the old trajectory and save it elsewhere
+		ArrayList<Waypoint> ct = new ArrayList<>(traj);
+		traj.clear();
 
-			if(traj.get(i).acceleration > maxAccel) {
-				traj.get(i).acceleration = maxAccel; 
-			}else if(traj.get(i).acceleration < -maxAccel) {
-				traj.get(i).acceleration = -maxAccel;
+		// iterate through the timestamps adding dt or the time difference each time
+		int index = 0;
+		for(double time = 0; time <= totalTime; time += dt) {
+			for (int i = index; i < ct.size() - 1; i++) {
+				// find the pair of points with times around our target time
+				if (ct.get(i).time <= time && ct.get(i + 1).time > time) {
+					double timeDifference = ct.get(i + 1).time - ct.get(i).time;
+					double timeNeeded = time - ct.get(i).time;
+					double percentNeeded = timeNeeded / timeDifference;
+					double percentage = (index + percentNeeded) / (sampleRate * spline.size());
+					traj.add(spline.getWaypoint(percentage));
+					index = i;
+					break;
+				}
 			}
-		} 
+		}
+		calculate();
 	}
 	
-	//Gets the jerk of each waypoint
-	//Requires that accelerations and times be calculated
 	private void getJerks() {
 		traj.get(0).jerk = 0; 
 		for(int i = 1; i < traj.size(); i++) {
@@ -185,82 +150,46 @@ public class Trajectory {
 			} 
 		}
 	}
-	
-	/*
-	//Gets the angular velocity at each point
-	//Requires that the headings and times be found
-	protected void getAngularVelocities() {
-		traj.get(0).angularVelocity = 0;   
-		for(int i = 1; i < traj.size(); i++) {
-			double headingDiff = traj.get(i).heading - traj.get(i - 1).heading; 
-			double timeDiff = traj.get(i).time - traj.get(i - 1).time; 
-			traj.get(i).angularVelocity = headingDiff / timeDiff;
-		}
-	}
-	
-	//Ensures that all velocities are under the max velocity cap
-	private void correctVelocities() {
-		getAngularVelocities();
-		for(int i = 0; i < traj.size(); i++) {
-			//calculate the outside wheel velocity
-			double velDiff = Math.abs(traj.get(i).angularVelocity) * (wheelBaseWidth / 2); 
-			double outside = traj.get(i).velocity + velDiff;
-			if(outside > maxVel) {
-				//lower the velocity but keep the same proportion
-				//thank you to adrisj (PoSE 2017-18 of 694) for the idea 
-				traj.get(i).velocity = traj.get(i).velocity * maxVel / outside; 
-			}
-		}
-		getTimes();
-		getAccelerations();
-		getJerks();
-	}
-	*/
 
-	//Time Parameterize the trajectory such that points are a certain time away
-	private void timeParameterize() {
-		double totalTime = traj.get(traj.size() - 1).time;
-		//Delete the old trajectory and save it elsewhere 
-		ArrayList<Waypoint> copy = new ArrayList<Waypoint>(traj);
-		traj.clear();
-
-		int index = 0;
-		//Iterate through the timestamps adding dt or the time difference each time   
-		for(double time = 0; time <= totalTime; time += dt) {
-			for (int i = index; i < copy.size() - 1; i++) {
-				//Find the pair of points with times around our target time
-				if (copy.get(i).time <= time && copy.get(i + 1).time > time) {
-					double timeDifference = copy.get(i + 1).time - copy.get(i).time;
-					double timeNeeded = time - copy.get(i).time;
-					double percentNeeded = timeNeeded / timeDifference;
-					double percentage = percentNeeded / sampleRate + copy.get(i).alpha;
-					traj.add(spline.getWaypoint(percentage, copy.get(i).spline));
-					index = i;
-					break;
-				}
-			}
-		}
+	public void generate() {
+		sample();
 		calculate();
+		timeParameterize();
 	}
 
 	private void calculate() {
-		//Path
-		getDistancesFromStart();
-		getDistancesFromEnd();
-		getHeadings();
-
-		//Trajectory
 		getVelocities();
 		getTimes();
 		getAccelerations();
 		getJerks(); //60 ft/sec^3 best for trapezoidal motion profile
 	}
 
-	public void generate() {
-		genPath();
-		calculate();
-		timeParameterize();
+	public enum FitMethod {
+		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite");
+		private String value;
+
+		FitMethod(String value) {
+			this.value = value;
+		}
+
+		public static FitMethod getMethod(String method) {
+			switch (method.toLowerCase()) {
+				case "cubic bezier":
+					return FitMethod.CUBIC_BEZIER;
+				case "cubic hermite":
+					return FitMethod.CUBIC_HERMITE;
+			}
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+
 	}
+
+	// TODO : enum for sample rates
 
 	/*
 	private SideTraj offsetTraj(double offsetCartesian) {

@@ -118,7 +118,7 @@
                <children>
                   <ListView editable="true" prefHeight="200.0" prefWidth="137.0" fx:id="x" />
                   <ListView fx:id="y" editable="true" prefHeight="200.0" prefWidth="137.0" />
-                  <ListView fx:id="h" editable="true" prefHeight="216.0" prefWidth="137.0" />
+                  <ListView fx:id="angle" editable="true" prefHeight="216.0" prefWidth="137.0" />
                </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="75.0">

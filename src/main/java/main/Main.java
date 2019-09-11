@@ -15,7 +15,12 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(new File("src\\main\\java\\main\\Gui.fxml").toURI().toURL());
+        String os = System.getProperty("os.name").toLowerCase();
+        FXMLLoader loader;
+        if(os.equals("win"))
+            loader = new FXMLLoader(new File("src\\main\\java\\main\\Gui.fxml").toURI().toURL());
+        else
+            loader = new FXMLLoader(new File("src/main/java/main/Gui.fxml").toURI().toURL());
         Scene scene = new Scene(loader.load());
         primaryStage.setScene(scene);
         primaryStage.show();

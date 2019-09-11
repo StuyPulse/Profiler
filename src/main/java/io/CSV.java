@@ -1,18 +1,25 @@
-package Files;
+package io;
+
 import gen.Trajectory;
 import gen.Waypoint;
-import org.apache.commons.csv.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 
-import java.nio.charset.Charset;
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class CSV {
 
-    public static Waypoint[] importCSV (File csvData) {
+    public static Waypoint[] importCSV(File csvData) {
         try {
-            CSVParser parser = CSVParser.parse(csvData, Charset.forName("UTF-8"), CSVFormat.EXCEL);
-            List <CSVRecord> records = parser.getRecords();
+            CSVParser parser = CSVParser.parse(csvData, StandardCharsets.UTF_8, CSVFormat.EXCEL);
+            List<CSVRecord> records = parser.getRecords();
             Map<String, Integer> headerMap = parser.getHeaderMap();
             int size = records.get(0).size();
             Waypoint[] waypoints = new Waypoint[size];
@@ -39,7 +46,7 @@ public class CSV {
         try {
             CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT);
             printer.printRecord("time", "x", "y", "distance", "velocity", "acceleration", "jerk", "heading");
-            for (Waypoint pt : trajectory.getPath()) {
+            for (Waypoint pt : trajectory.getPoints()) {
                 printer.printRecord(pt.time, pt.x, pt.y, pt.distanceFromStart, pt.velocity, pt.acceleration, pt.jerk, Math.toDegrees(pt.heading));
             }
             printer.close();

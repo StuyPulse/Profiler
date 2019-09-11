@@ -1,9 +1,9 @@
 package main;
 
-import Files.CSV;
-import Files.Port;
+import io.CSV;
 import gen.Trajectory;
 import gen.Waypoint;
+import io.JSON;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,13 +16,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -38,13 +33,21 @@ public class Gui {
 
     public ListView<String> x = null;
     public ListView<String> y = null;
-    public ListView<String> angle = null;
+    public ListView<String> h = null;
     public Button add = null;
     public Button delete = null;
 
     public Button gen = null;
     public Button save = null;
     public Button load = null;
+
+    private Trajectory trajectory;
+
+    private void addPoint (double x, double y, double h) {
+        this.x.getItems().add(Double.toString(x));
+        this.y.getItems().add(Double.toString(y));
+        this.h.getItems().add(Double.toString(h));
+    }
 
     @FXML
     public void addPoint() {
@@ -54,15 +57,15 @@ public class Gui {
         root.getChildren().add(new HBox(new Label("X Pos: "), x));
         TextField y = new TextField();
         root.getChildren().add(new HBox(new Label("Y Pos: "), y));
-        TextField theta = new TextField();
-        root.getChildren().add(new HBox(new Label("Angle: "), theta));
+        TextField h = new TextField();
+        root.getChildren().add(new HBox(new Label("Angle: "), h));
         Button confirm = new Button("OK");
 
         confirm.setOnAction((e) -> {
             try {
-                this.x.getItems().add(Double.toString(Double.parseDouble(x.getText())));
-                this.y.getItems().add(Double.toString(Double.parseDouble(y.getText())));
-                this.angle.getItems().add(Double.toString(Double.parseDouble(theta.getText())));
+                addPoint(Double.parseDouble(x.getText()),
+                        Double.parseDouble(y.getText()),
+                        Double.parseDouble(h.getText()));
                 prompt.close();
             }catch (NumberFormatException n) {
                 System.out.println("not a number!!!");
@@ -70,10 +73,10 @@ public class Gui {
         });
         x.setOnAction((e) -> y.requestFocus());
         x.setOnKeyPressed((ke) -> { if(y.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) prompt.close(); });
-        y.setOnAction((e) -> theta.requestFocus());
+        y.setOnAction((e) -> h.requestFocus());
         y.setOnKeyPressed((ke) -> { if(y.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) x.requestFocus(); });
-        theta.setOnAction((e) -> confirm.fire());
-        theta.setOnKeyPressed((ke) -> { if(theta.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) y.requestFocus(); });
+        h.setOnAction((e) -> confirm.fire());
+        h.setOnKeyPressed((ke) -> { if(h.getText().isEmpty() && ke.getCode().equals(KeyCode.BACK_SPACE)) y.requestFocus(); });
 
         root.getChildren().add(confirm);
         root.setSpacing(10);
@@ -89,11 +92,11 @@ public class Gui {
         if(index != -1) {
             x.getItems().remove(index);
             y.getItems().remove(index);
-            angle.getItems().remove(index);
+            h.getItems().remove(index);
         }else {
             x.getItems().remove(x.getItems().size()-1);
             y.getItems().remove(y.getItems().size()-1);
-            angle.getItems().remove(angle.getItems().size()-1);
+            h.getItems().remove(h.getItems().size()-1);
         }
     }
 
@@ -109,9 +112,9 @@ public class Gui {
             for(int i = 0; i < waypoints.length; i++) {
                 waypoints[i] = new Waypoint(Double.parseDouble(x.getItems().get(i)),
                         Double.parseDouble(y.getItems().get(i)),
-                        Math.toRadians(Double.parseDouble(angle.getItems().get(i))));
+                        Math.toRadians(Double.parseDouble(h.getItems().get(i))));
             }
-            Trajectory trajectory = new Trajectory(Trajectory.FitMethod.getMethod(spline.getValue()), 100000, tightness.getValue(),
+            trajectory = new Trajectory(Trajectory.FitMethod.getMethod(spline.getValue()), 100000, tightness.getValue(),
                     Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
                     Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
                     waypoints);
@@ -129,29 +132,8 @@ public class Gui {
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("javascript object notation", "*.json"));
         chooser.setInitialFileName(getDateTimeString());
         File file = chooser.showSaveDialog(new Stage());
-        try (FileWriter writer = new FileWriter(file)) {
-            JSONObject root = new JSONObject();
-            root.put("spline", this.spline.getValue());
-            root.put("dt", Double.parseDouble(dt.getText()));
-            root.put("width", Double.parseDouble(width.getText()));
-            root.put("velocity", Double.parseDouble(velocity.getText()));
-            root.put("acceleration", Double.parseDouble(acceleration.getText()));
-            root.put("jerk", Double.parseDouble(jerk.getText()));
-            root.put("tightness", tightness.getValue());
-            JSONArray waypoints = new JSONArray();
-            for(int i = 0; i < x.getItems().size(); i++) {
-                JSONArray point = new JSONArray();
-                point.add(Double.parseDouble(x.getItems().get(i)));
-                point.add(Double.parseDouble(y.getItems().get(i)));
-                point.add(Double.parseDouble(angle.getItems().get(i)));
-                waypoints.add(point);
-            }
-            root.put("waypoints", waypoints);
-            writer.write(root.toJSONString());
-            writer.flush();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        // TODO : generate trajectory before saving
+        JSON.save(trajectory, file);
     }
 
     @FXML
@@ -159,27 +141,16 @@ public class Gui {
         FileChooser chooser = new FileChooser();
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("javascript object notation", "*.json"));
         File file = chooser.showOpenDialog(new Stage());
-        JSONParser parser = new JSONParser();
-        try (FileReader reader = new FileReader(file)) {
-            JSONObject root = (JSONObject) parser.parse(reader);
-            spline.setValue((String) root.get("spline"));
-            dt.setText(Double.toString((double) root.get("dt")));
-            velocity.setText(Double.toString((double) root.get("velocity")));
-            acceleration.setText(Double.toString((double) root.get("acceleration")));
-            jerk.setText(Double.toString((double) root.get("jerk")));
-            width.setText(Double.toString((double) root.get("width")));
-            tightness.setValue((double) root.get("tightness"));
-            JSONArray waypoints = (JSONArray) root.get("waypoints");
-            x.getItems().clear(); y.getItems().clear(); angle.getItems().clear();
-            for (Object waypoint : waypoints) {
-                JSONArray point = (JSONArray) waypoint;
-                x.getItems().add(Double.toString((double) point.get(0)));
-                y.getItems().add(Double.toString((double) point.get(1)));
-                angle.getItems().add(Double.toString((double) point.get(2)));
-            }
-            parser.reset(reader);
-        }catch (Exception e) {
-            e.printStackTrace();
+        spline.setValue(trajectory.method.toString());
+        trajectory = JSON.load(file);
+        dt.setText(Double.toString(trajectory.dt));
+        velocity.setText(Double.toString(trajectory.maxVelocity));
+        acceleration.setText(Double.toString(trajectory.maxAcceleration));
+        jerk.setText(Double.toString(trajectory.maxJerk));
+        width.setText(Double.toString(trajectory.wheelBaseWidth));
+        tightness.setValue(trajectory.spline.tightness);
+        for (Waypoint w : trajectory.spline.waypoints()) {
+            addPoint(w.x, w.y, w.heading);
         }
     }
 
@@ -198,15 +169,15 @@ public class Gui {
         x.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             int index = x.getSelectionModel().getSelectedIndices().get(0);
             y.getSelectionModel().select(index);
-            angle.getSelectionModel().select(index);
+            h.getSelectionModel().select(index);
         });
         y.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             int index = y.getSelectionModel().getSelectedIndices().get(0);
             x.getSelectionModel().select(index);
-            angle.getSelectionModel().select(index);
+            h.getSelectionModel().select(index);
         });
-        angle.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            int index = angle.getSelectionModel().getSelectedIndices().get(0);
+        h.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            int index = h.getSelectionModel().getSelectedIndices().get(0);
             x.getSelectionModel().select(index);
             y.getSelectionModel().select(index);
         });
@@ -214,7 +185,7 @@ public class Gui {
         StringConverter<String> converter = new StringConverter<String>() {
             @Override
             public String toString(String object) {
-                return Double.toString(Double.parseDouble(object));
+                return object;
             }
 
             @Override
@@ -224,6 +195,8 @@ public class Gui {
         };
         x.setCellFactory(TextFieldListCell.forListView(converter));
         y.setCellFactory(TextFieldListCell.forListView(converter));
-        angle.setCellFactory(TextFieldListCell.forListView(converter));
+        h.setCellFactory(TextFieldListCell.forListView(converter));
+
+        trajectory = null;
     }
 }

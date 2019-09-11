@@ -1,5 +1,5 @@
 package followers;
-import Files.CSV;
+import io.CSV;
 import gen.Waypoint;
 
 import java.io.*;
