@@ -114,12 +114,12 @@ public class Gui {
                         Double.parseDouble(y.getItems().get(i)),
                         Math.toRadians(Double.parseDouble(h.getItems().get(i))));
             }
-            trajectory = new Trajectory(Trajectory.FitMethod.getMethod(spline.getValue()), 100000, tightness.getValue(),
+            int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
+            trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, tightness.getValue(),
                     Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
                     Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
                     waypoints);
             trajectory.generate();
-
             CSV.exportCSV(file, trajectory);
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");

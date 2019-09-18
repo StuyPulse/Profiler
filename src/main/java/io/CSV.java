@@ -1,6 +1,7 @@
 package io;
 
 import gen.Trajectory;
+import gen.Vector;
 import gen.Waypoint;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -25,10 +26,11 @@ public class CSV {
             Waypoint[] waypoints = new Waypoint[size];
             int i = 0;
             for (CSVRecord record : records) {
-                waypoints[i] = new Waypoint(getHead(record, "x", headerMap), getHead(record, "y", headerMap));
+                waypoints[i] = new Waypoint(getHead(record, "x", headerMap),
+                                            getHead(record, "y", headerMap),
+                                            getHead(record, "heading", headerMap));
                 waypoints[i].acceleration = getHead(record, "acceleration", headerMap);
                 waypoints[i].jerk = getHead(record, "jerk", headerMap);
-                waypoints[i].heading = getHead(record, "heading", headerMap);
                 waypoints[i].time = getHead(record, "time", headerMap);
                 waypoints[i].distanceFromStart = getHead(record, "distance", headerMap);
                 waypoints[i].velocity = getHead(record, "velocity", headerMap);

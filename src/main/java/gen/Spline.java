@@ -25,6 +25,7 @@ public class Spline {
         double pps = 1.0 / segments.length; // percent per curve
         int seg = (int) Math.floor(alpha / pps);
         double a = (alpha % pps) / pps;
+        // TODO Array Index Out of Bounds
         return segments[seg].getWaypoint(a);
     }
 

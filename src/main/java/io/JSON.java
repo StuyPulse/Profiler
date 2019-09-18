@@ -48,7 +48,7 @@ public class JSON {
         try (FileReader reader = new FileReader(file)) {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(reader);
-            Trajectory.FitMethod method = Trajectory.FitMethod.getMethod((String) root.get("spline"));
+            Trajectory.FitMethod method = Trajectory.FitMethod.findMethod((String) root.get("spline"));
             double dt = Double.parseDouble((String) root.get("dt"));
             double width = Double.parseDouble((String) root.get("width"));
             double velocity = Double.parseDouble((String) root.get("velocity"));
@@ -64,7 +64,8 @@ public class JSON {
                 double h = Double.parseDouble((String) jp.get(2));
                 waypoints[i] = new Waypoint(x, y, h);
             }
-            traj = new Trajectory(method, 100000, tightness, dt, width, velocity, acceleration, jerk, waypoints);
+            int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
+            traj = new Trajectory(method, rate, tightness, dt, width, velocity, acceleration, jerk, waypoints);
         } catch (Exception e) {
             e.printStackTrace();
         }

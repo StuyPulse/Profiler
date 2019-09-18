@@ -34,6 +34,12 @@ public class Trajectory {
 		traj = new ArrayList<>();
 	}
 
+	private double bound(double value, double max, double min) {
+	    if(value > max) 	 return max;
+	    else if(value < min) return min;
+	    else 				 return value;
+	}
+
 	public ArrayList<Waypoint> getPoints() {
 		ArrayList<Waypoint> clone = new ArrayList<>(traj.size());
 		for (int i = 0; i < traj.size(); i++) {
@@ -63,35 +69,11 @@ public class Trajectory {
 			double decelerate = Math.sqrt(2 * maxAcceleration * waypoint.distanceFromEnd);
 
 			//Sets the velocity to the minimum of these
-			double lowest = Math.min(Math.min(accelerate, cruise), decelerate);
-			if (lowest == accelerate) {
-				waypoint.velocity = accelerate;
-			} else if (lowest == cruise) {
-				waypoint.velocity = cruise;
-			} else {
-				waypoint.velocity = decelerate;
-			}
+			waypoint.velocity = Math.min(Math.min(accelerate, cruise), decelerate);
 		}
 	}
 
-	private void getAccelerations() {
-		traj.get(0).acceleration = 0;
-		for(int i = 1; i < traj.size(); i++) {
-			double velocityDiff = traj.get(i).velocity - traj.get(i - 1).velocity;
-			if(velocityDiff == 0) {
-				traj.get(i).acceleration = 0;
-				continue;
-			}
-			double timeDiff = traj.get(i).time - traj.get(i - 1).time;
-			traj.get(i).acceleration = velocityDiff / timeDiff;
 
-			if (traj.get(i).acceleration > maxAcceleration) {
-				traj.get(i).acceleration = maxAcceleration;
-			} else if (traj.get(i).acceleration < -maxAcceleration) {
-				traj.get(i).acceleration = -maxAcceleration;
-			}
-		}
-	}
 
 	private void getTimes() {
 		double totalTime = 0;
@@ -104,6 +86,24 @@ public class Trajectory {
 			double dt = dd / (minVel + Math.abs(dv) / 2);
 			totalTime += dt;
 			traj.get(i).time = totalTime;
+		}
+	}
+
+	private void getAccelerations() {
+		traj.get(0).acceleration = 0;
+		for(int i = 1; i < traj.size(); i++) {
+			double velocityDiff = traj.get(i).velocity - traj.get(i - 1).velocity;
+			double timeDiff = traj.get(i).time - traj.get(i - 1).time;
+			traj.get(i).acceleration = bound(velocityDiff / timeDiff, maxAcceleration, -maxAcceleration);
+		}
+	}
+
+	private void getJerks() {
+		traj.get(0).jerk = 0;
+		for(int i = 1; i < traj.size(); i++) {
+			double accelerationDiff = traj.get(i).acceleration - traj.get(i - 1).acceleration;
+			double timeDiff = traj.get(i).time - traj.get(i - 1).time;
+			traj.get(i).jerk = bound(accelerationDiff / timeDiff, maxJerk, -maxJerk);
 		}
 	}
 
@@ -132,30 +132,6 @@ public class Trajectory {
 		}
 		calculate();
 	}
-	
-	private void getJerks() {
-		traj.get(0).jerk = 0; 
-		for(int i = 1; i < traj.size(); i++) {
-			double accelerationDiff = traj.get(i).acceleration - traj.get(i - 1).acceleration; 
-			if(accelerationDiff == 0) {
-				traj.get(i).jerk = 0; 
-			}
-			double timeElapsed = traj.get(i).time - traj.get(i - 1).time; 
-			traj.get(i).jerk = accelerationDiff / timeElapsed;
-			
-			if(traj.get(i).jerk > maxJerk) { 
-				traj.get(i).jerk = maxJerk; 
-			}else if(traj.get(i).jerk < -maxJerk) {
-				traj.get(i).jerk = -maxJerk; 
-			} 
-		}
-	}
-
-	public void generate() {
-		sample();
-		calculate();
-		timeParameterize();
-	}
 
 	private void calculate() {
 		getVelocities();
@@ -164,32 +140,65 @@ public class Trajectory {
 		getJerks(); //60 ft/sec^3 best for trapezoidal motion profile
 	}
 
-	public enum FitMethod {
-		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite");
-		private String value;
+	public void generate() {
+		sample();
+		calculate();
+		timeParameterize();
+	}
 
-		FitMethod(String value) {
-			this.value = value;
+	public enum FitMethod {
+
+		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite");
+
+		private String method;
+
+		FitMethod(String method) {
+			this.method = method;
 		}
 
-		public static FitMethod getMethod(String method) {
-			switch (method.toLowerCase()) {
+		public static FitMethod findMethod(String str) {
+			switch(str.toLowerCase()) {
 				case "cubic bezier":
 					return FitMethod.CUBIC_BEZIER;
 				case "cubic hermite":
 					return FitMethod.CUBIC_HERMITE;
+				default:
+					return null;
 			}
-			return null;
+		}
+
+		public String getMethod() {
+			return method;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return method;
 		}
 
 	}
 
 	// TODO : enum for sample rates
+    public enum SampleRate {
+
+		LOW(1000), MEDIUM(10000), HIGH(100000);
+
+		private int rate;
+
+		SampleRate(int rate) {
+			this.rate = rate;
+		}
+
+		public int getRate() {
+			return rate;
+		}
+
+		@Override
+		public String toString() {
+			return Integer.toString(rate);
+		}
+
+    }
 
 	/*
 	private SideTraj offsetTraj(double offsetCartesian) {
