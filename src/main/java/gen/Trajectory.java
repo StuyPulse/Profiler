@@ -34,18 +34,21 @@ public class Trajectory {
 		traj = new ArrayList<>();
 	}
 
-	private double bound(double value, double max, double min) {
-	    if(value > max) 	 return max;
-	    else if(value < min) return min;
-	    else 				 return value;
+	private static double bound(double value, double max, double min) {
+		return Math.min(Math.max(value, min), max);
 	}
 
 	public ArrayList<Waypoint> getPoints() {
-		ArrayList<Waypoint> clone = new ArrayList<>(traj.size());
-		for (int i = 0; i < traj.size(); i++) {
-			clone.set(i, traj.get(i).clone());
+		try {
+			ArrayList<Waypoint> clone = new ArrayList<>(traj.size());
+			for (Waypoint waypoint : traj) {
+				clone.add((Waypoint) waypoint.clone());
+			}
+			return clone;
+		} catch (Exception e) {
+			System.out.println("error in copying");
+			return null;
 		}
-		return clone;
 	}
 
 	// samples the spline by finding sampleRate # of points per segment
@@ -120,10 +123,10 @@ public class Trajectory {
 			for (int i = index; i < ct.size() - 1; i++) {
 				// find the pair of points with times around our target time
 				if (ct.get(i).time <= time && ct.get(i + 1).time > time) {
-					double timeDifference = ct.get(i + 1).time - ct.get(i).time;
-					double timeNeeded = time - ct.get(i).time;
-					double percentNeeded = timeNeeded / timeDifference;
-					double percentage = (index + percentNeeded) / (sampleRate * spline.size());
+					double timeDiff = ct.get(i + 1).time - ct.get(i).time;
+					double timeNeed = time - ct.get(i).time;
+					double percentNeed = timeNeed / timeDiff;
+					double percentage = (index + percentNeed) / (sampleRate * spline.size());
 					traj.add(spline.getWaypoint(percentage));
 					index = i;
 					break;
@@ -144,6 +147,9 @@ public class Trajectory {
 		sample();
 		calculate();
 		timeParameterize();
+
+		System.out.println("fin");
+		System.out.println(traj.size() + " points");
 	}
 
 	public enum FitMethod {
@@ -157,14 +163,10 @@ public class Trajectory {
 		}
 
 		public static FitMethod findMethod(String str) {
-			switch(str.toLowerCase()) {
-				case "cubic bezier":
-					return FitMethod.CUBIC_BEZIER;
-				case "cubic hermite":
-					return FitMethod.CUBIC_HERMITE;
-				default:
-					return null;
+			for (FitMethod method : FitMethod.values()) {
+				if (method.getMethod().equals(str.toLowerCase())) return method;
 			}
+			return null;
 		}
 
 		public String getMethod() {
@@ -178,7 +180,6 @@ public class Trajectory {
 
 	}
 
-	// TODO : enum for sample rates
     public enum SampleRate {
 
 		LOW(1000), MEDIUM(10000), HIGH(100000);

@@ -19,7 +19,7 @@ public class CSV {
 
     public static Waypoint[] importCSV(File csvData) {
         try {
-            CSVParser parser = CSVParser.parse(csvData, StandardCharsets.UTF_8, CSVFormat.EXCEL);
+            CSVParser parser = CSVParser.parse(csvData, StandardCharsets.UTF_8, CSVFormat.DEFAULT);
             List<CSVRecord> records = parser.getRecords();
             Map<String, Integer> headerMap = parser.getHeaderMap();
             int size = records.get(0).size();
@@ -38,8 +38,8 @@ public class CSV {
             }
             parser.close();
             return waypoints;
-        } catch (IOException ex) {
-            System.out.print("You messed up");
+        } catch (IOException io) {
+            System.out.print("invalid file");
         }
         return null;
     }
@@ -53,7 +53,7 @@ public class CSV {
             }
             printer.close();
         } catch (IOException io) {
-            System.out.println("invalid file!!!");
+            System.out.println("invalid file!");
         }
     }
 

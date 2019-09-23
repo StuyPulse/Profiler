@@ -7,49 +7,70 @@ import java.util.Objects;
 
 public class Spline {
 
+    private static class Position {
+
+        private final int seg;
+        private final double alpha;
+
+        private Position(int seg, double alpha) {
+            this.seg = seg;
+            this.alpha = alpha;
+        }
+
+    }
+
     private final Segment[] segments;
-    // private SegmentFactory segFact;
     public final double tightness;
 
     public Spline(double tightness, SegmentFactory segFact, Waypoint... waypoints) {
         if(waypoints.length < 2) throw new IllegalArgumentException("Not enough points for a spline");
         this.tightness = tightness;
-        // this.segFact = segFact;
         segments = new Segment[waypoints.length - 1];
         for(int i = 0; i < waypoints.length - 1; i++) {
             segments[i] = segFact.getInstance(tightness, waypoints[i], waypoints[i+1]);
         }
     }
 
-    public Waypoint getWaypoint(double alpha) {
-        double pps = 1.0 / segments.length; // percent per curve
-        int seg = (int) Math.floor(alpha / pps);
-        double a = (alpha % pps) / pps;
-        // TODO Array Index Out of Bounds
-        return segments[seg].getWaypoint(a);
+    private Position findPoint(double alpha) {
+        double percent = 1.0 / segments.length;
+        int s = (int) Math.min(Math.max(Math.floor(alpha / percent), 0), segments.length-1);
+        double a = (alpha - s * percent) / percent;
+        return new Position(s, a);
     }
 
-    public Vector differentiate(double alpha) {
-        double pps = 1.0 / segments.length; // percent per curve
-        int seg = (int) Math.floor(alpha / pps);
-        double a = (alpha % pps) / pps;
-        return segments[seg].differentiate(a);
+    public Vector getPoint(double alpha) {
+        Position pos = findPoint(alpha);
+        // TODO null pointer exception
+        return segments[pos.seg].getWaypoint(pos.alpha);
     }
 
-    public double integrate(double from, double to) {
-        double pps = 1.0 / segments.length; // percent per curve
-        int seg = (int) Math.floor(from / pps);
-        if(from - to == pps) {
-            return segments[seg].integrate(0.0, 1.0);
-        }else if(from - to < pps) {
-            double a = (from % pps) / pps;
-            double b = (to % pps) / pps;
-            return segments[seg].integrate(a, b);
-        }else {
-            double a = (from % pps) / pps;
-            double n = (seg+1) * pps;
-            return segments[seg].integrate(a, 1.0) + integrate(n, to);
+    public Vector headingC(double alpha) {
+        Position pos = findPoint(alpha);
+        return segments[pos.seg].differentiateC(pos.alpha);
+    }
+
+    public double headingP(double alpha) {
+        Position pos = findPoint(alpha);
+        return segments[pos.seg].differentiateP(pos.alpha);
+    }
+
+    public double distance(double from, double to) {
+        Position fPos = findPoint(from);
+        Position tPos = findPoint(to);
+        if (fPos.seg == tPos.seg) {
+            return segments[fPos.seg].integrate(fPos.alpha, tPos.alpha);
+        } else {
+            return segments[fPos.seg].integrate(fPos.alpha, 1.0) + distance(fPos.seg + 1, to);
         }
+    }
+
+    // TODO create lite version of functions above to speed up this process
+
+    public Waypoint getWaypoint(double alpha) {
+        Waypoint wp = new Waypoint(getPoint(alpha), headingP(alpha));
+        wp.distanceFromStart = distance(0, alpha);
+        wp.distanceFromEnd   = distance(alpha, size());
+        return wp;
     }
 
     public int size() { return segments.length; }
@@ -84,6 +105,6 @@ public class Spline {
     }
 
     @Override
-    public int hashCode() { return Objects.hash(segments); }
+    public int hashCode() { return Objects.hash(segments, tightness); }
 
 }

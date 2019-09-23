@@ -31,22 +31,17 @@ public class CubicBezierSegment extends Segment {
     }
 
     @Override
-    public Waypoint getWaypoint(double alpha) {
+    public Vector getWaypoint(double alpha) {
         double x = points[0].x * Math.pow(1 - alpha, 3) + points[1].x * 3 * Math.pow(1 - alpha, 2) * alpha +
                 points[2].x * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].x * Math.pow(alpha, 3);
         double y = points[0].y * Math.pow(1 - alpha, 3) + points[1].y * 3 * Math.pow(1 - alpha, 2) * alpha +
                 points[2].y * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].y * Math.pow(alpha, 3);
-        Vector d = differentiate(alpha);
-        double h = Math.atan2(d.y, d.x);
-        h = (2 * Math.PI + h) % (2 * Math.PI);
-        Waypoint point = new Waypoint(x, y, h);
-        point.distanceFromStart = integrate(0, alpha);
-        point.distanceFromEnd = integrate(alpha, 1);
+        Vector point = new Vector(x, y);
         return point;
     }
 
     @Override
-    public Vector differentiate(double alpha) {
+    public Vector differentiateC(double alpha) {
         //uses equation for bezier derivatives: Σi=0,n Bn-1,i(t) * n * (Pi+1 - pi)
         //https://pomax.github.io/bezierinfo/#derivatives
         double dx = 3 * Math.pow(1 - alpha, 2) * (points[1].x - points[0].x) +
@@ -69,7 +64,7 @@ public class CubicBezierSegment extends Segment {
         double sum = 0;
         for(int i = 0; i < 3; i++) {
             double pt = ((to - from) / 2.0) * abscissa[i] + ((to + from) / 2.0);
-            Vector d = differentiate(pt);
+            Vector d = differentiateC(pt);
             sum += weights[i] * Math.sqrt(d.x*d.x + d.y*d.y);
         }
         return ((to - from) / 2.0) * sum;

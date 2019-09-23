@@ -23,9 +23,16 @@ public abstract class Segment {
         }
     }
 
-    public abstract Waypoint getWaypoint(double alpha);
+    public abstract Vector getWaypoint(double alpha);
 
-    public abstract Vector differentiate(double alpha);
+    public abstract Vector differentiateC(double alpha);
+
+    public double differentiateP(double alpha) {
+        Vector d = differentiateC(alpha);
+        double h = Math.atan2(d.y, d.x);
+        h = (2 * Math.PI + h) % (2 * Math.PI);
+        return h;
+    }
 
     public abstract double integrate(double from, double to);
 

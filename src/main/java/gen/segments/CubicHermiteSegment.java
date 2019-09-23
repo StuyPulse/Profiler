@@ -31,7 +31,7 @@ public class CubicHermiteSegment extends Segment {
     }
 
     @Override
-    public Waypoint getWaypoint(double alpha) {
+    public Vector getWaypoint(double alpha) {
         double h1 = 2 * Math.pow(alpha, 3) - 3 * Math.pow(alpha, 2) + 1;
         double h2 = -2 * Math.pow(alpha, 3) + 3 * Math.pow(alpha, 2);
         double h3 = Math.pow(alpha, 3) - 2 * Math.pow(alpha, 2) + alpha;
@@ -40,17 +40,12 @@ public class CubicHermiteSegment extends Segment {
                 points[2].x * h3 + points[3].x * h4;
         double y = points[0].y * h1 + points[1].y * h2 +
                 points[2].y * h3 + points[3].y * h4;
-        Vector d = differentiate(alpha);
-        double h = Math.atan2(d.y, d.x);
-        h = (2 * Math.PI + h) % (2 * Math.PI);
-        Waypoint point = new Waypoint(x, y, h);
-        point.distanceFromStart = integrate(0, alpha);
-        point.distanceFromEnd = integrate(alpha, 1);
+        Vector point = new Vector(x, y);
         return point;
     }
 
     @Override
-    public Vector differentiate(double alpha) {
+    public Vector differentiateC(double alpha) {
         // f'(x) = 3at^2 + 2b + c (using the power rule)
         double h1 = 6 * Math.pow(alpha, 2) - 6 * alpha;
         double h2 = -6 * Math.pow(alpha, 2) + 6 * alpha;
@@ -74,7 +69,7 @@ public class CubicHermiteSegment extends Segment {
         double sum = 0;
         for(int i = 0; i < 2; i++) {
             double pt = ((to - from) / 2.0) * abscissa[i] + ((to + from) / 2.0);
-            Vector d = differentiate(pt);
+            Vector d = differentiateC(pt);
             sum += weights[i] * Math.sqrt(d.x*d.x + d.y*d.y);
         }
         return ((to - from) / 2.0) * sum;

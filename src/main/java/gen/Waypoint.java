@@ -2,7 +2,7 @@ package gen;
 
 import java.util.Objects;
 
-public class Waypoint extends Vector {
+public class Waypoint extends Vector implements Cloneable {
 
 	//Universal units so longs as you are consistent
 	public double time;
@@ -15,6 +15,11 @@ public class Waypoint extends Vector {
 
 	public Waypoint(double x, double y, double heading) {
 		super(x, y);
+		this.heading = heading;
+	}
+
+	public Waypoint(Vector v, double heading) {
+		super(v.x, v.y);
 		this.heading = heading;
 	}
 
@@ -34,16 +39,6 @@ public class Waypoint extends Vector {
 
 	public Vector toVector() {
 		return new Vector(x, y);
-	}
-
-	public Waypoint clone() {
-		Waypoint w = new Waypoint(this.x, this.y, this.heading);
-		w.distanceFromStart = this.distanceFromStart;
-		w.distanceFromEnd = this.distanceFromEnd;
-		w.velocity = this.velocity;
-		w.acceleration = this.acceleration;
-		w.jerk = this.jerk;
-		return w;
 	}
 
 	@Override
@@ -67,6 +62,11 @@ public class Waypoint extends Vector {
 				time,
 				distanceFromStart, distanceFromEnd,
 				velocity, acceleration, jerk);
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 
 }

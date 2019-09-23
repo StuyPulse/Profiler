@@ -104,7 +104,7 @@ public class Gui {
     public void generate() {
         FileChooser chooser = new FileChooser();
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated Values", "*.csv"));
-        chooser.setInitialFileName(getDateTimeString());
+        chooser.setInitialFileName(getDateTimeString() + ".csv");
         File file = chooser.showSaveDialog(new Stage());
 
         try {
@@ -130,7 +130,7 @@ public class Gui {
     public void save() {
         FileChooser chooser = new FileChooser();
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("javascript object notation", "*.json"));
-        chooser.setInitialFileName(getDateTimeString());
+        chooser.setInitialFileName(getDateTimeString() + ".json");
         File file = chooser.showSaveDialog(new Stage());
         // TODO : generate trajectory before saving
         JSON.save(trajectory, file);

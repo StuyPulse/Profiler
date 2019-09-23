@@ -6,28 +6,30 @@
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/classAnalysis.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/classAnalysis.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/javaCompile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/javaCompile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/taskHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/followers/DistanceFollower.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/followers/DistanceFollower.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/followers/Port.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Spline.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Spline.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$FitMethod.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$FitMethod.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$SampleRate.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$SampleRate.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Vector.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Vector.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Waypoint.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Waypoint.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/splines/CubicBezier.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/splines/CubicHermite.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/splines/Spline.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/segments/CubicBezierSegment.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/segments/CubicBezierSegment.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/segments/CubicHermiteSegment.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/segments/CubicHermiteSegment.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/segments/Segment.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/segments/Segment.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/io/CSV.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/io/CSV.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/main/Gui$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/main/Gui$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/main/Gui.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/main/Gui.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/main/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/main/Main.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/gen/Spline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/Spline.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/gen/Trajectory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/Trajectory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/gen/Vector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/Vector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/gen/Waypoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/Waypoint.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/gen/segments/CubicBezierSegment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/segments/CubicBezierSegment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/gen/segments/CubicHermiteSegment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/segments/CubicHermiteSegment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/gen/segments/Segment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/segments/Segment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/io/CSV.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/io/CSV.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/JSON.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/io/JSON.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/main/Gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/main/Gui.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />

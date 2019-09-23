@@ -2,7 +2,7 @@ package gen;
 
 import java.util.Objects;
 
-public class Vector {
+public class Vector implements Cloneable {
 
     public double x, y;
 
@@ -21,10 +21,6 @@ public class Vector {
         return Math.sqrt((this.x - that.x) * (this.x - that.x) + (this.y - that.y) * (this.y - that.y));
     }
 
-    public Vector clone() {
-        return new Vector(this.x, this.y);
-    }
-
     @Override
     public String toString() {
         return "(" + x + ", " + y + ")";
@@ -41,6 +37,11 @@ public class Vector {
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 }
