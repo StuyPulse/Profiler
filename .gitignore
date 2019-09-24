@@ -1,0 +1,15 @@
+# Compiled class files 
+*.class
+bin/*
+build/*
+
+# Eclipse files 
+*.classpath
+*.project
+.settings/*
+
+# intellij files 
+workspace.xml
+usage.statistics.xml
+tasks.xml
+.idea/shelf/*
