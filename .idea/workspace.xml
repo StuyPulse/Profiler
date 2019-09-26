@@ -4,12 +4,9 @@
     <list default="true" id="568d974e-1d24-4a30-8a93-249f726020f4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/classAnalysis.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/classAnalysis.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/javaCompile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/javaCompile/javaCompile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.3/taskHistory/taskHistory.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Spline.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Spline.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$FitMethod.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$FitMethod.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$SampleRate.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/gen/Trajectory$SampleRate.class" afterDir="false" />
@@ -31,6 +28,8 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/gen/segments/Segment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/gen/segments/Segment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/io/CSV.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/io/CSV.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/main/Gui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/main/Gui.java" afterDir="false" />
+=======
+>>>>>>> master
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -66,7 +65,16 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+<<<<<<< HEAD
   <component name="ProjectId" id="1OYsh5Yuhyv2mpa6AVkpORVUCGO" />
+=======
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-78" />
+    <option name="y" value="111" />
+    <option name="width" value="1614" />
+    <option name="height" value="849" />
+  </component>
+>>>>>>> master
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
@@ -143,6 +151,7 @@
     </task>
     <servers />
   </component>
+<<<<<<< HEAD
   <component name="TodoView">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
@@ -152,14 +161,20 @@
       <is-autoscroll-to-source value="true" />
     </todo-panel>
   </component>
+=======
+>>>>>>> master
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
+<<<<<<< HEAD
             <State>
               <option name="COLUMN_ORDER" />
             </State>
+=======
+            <State />
+>>>>>>> master
           </value>
         </entry>
       </map>
