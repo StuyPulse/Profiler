@@ -17,7 +17,7 @@ public class Vector implements Cloneable {
         return new Vector(x, y);
     }
 
-    public double distanceTo(Waypoint that) {
+    public double distanceTo(Vector that) {
         return Math.sqrt((this.x - that.x) * (this.x - that.x) + (this.y - that.y) * (this.y - that.y));
     }
 

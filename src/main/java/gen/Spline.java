@@ -5,6 +5,9 @@ import gen.segments.Segment.SegmentFactory;
 
 import java.util.Objects;
 
+/**
+ *
+ */
 public class Spline {
 
     private static class Position {
@@ -38,10 +41,10 @@ public class Spline {
         return new Position(s, a);
     }
 
-    public Vector getPoint(double alpha) {
+    private Vector getPoint(double alpha) {
         Position pos = findPoint(alpha);
         // TODO null pointer exception
-        return segments[pos.seg].getWaypoint(pos.alpha);
+        return segments[pos.seg].getPoint(pos.alpha);
     }
 
     public Vector headingC(double alpha) {

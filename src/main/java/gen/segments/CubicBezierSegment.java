@@ -3,10 +3,24 @@ package gen.segments;
 import gen.Vector;
 import gen.Waypoint;
 
+/**
+ * @author Tahsin Ahmed
+ * A segment that is generated through the cubic bezier equations.
+ */
 public class CubicBezierSegment extends Segment {
-
+    /** A cubic bezier segment generator
+     * used by the corresponding spline.  */
     public static class CubicBezierSegmentFactory implements Segment.SegmentFactory {
-
+        /**
+         * @param tightness A multiplier that controls how close the
+         *                  control points are to the start/end of
+         *                  the individual curve.
+         * @param startwp the starting waypoint.
+         * @param endwp the ending waypoint
+         * @return A segment that connects the starting waypoint
+         * to the ending waypoint witht he given tightness (this
+         * will stay constant throughout the generation of the curve).
+         */
         @Override
         public CubicBezierSegment getInstance(double tightness, Waypoint startwp, Waypoint endwp) {
             //taken from team 3641's method of calculating bezier curves found here:
@@ -26,12 +40,20 @@ public class CubicBezierSegment extends Segment {
 
     }
 
+    /**
+     * 3 is the order of the segment.
+     * @param points the control and starting points.
+     */
     public CubicBezierSegment(Vector... points) {
         super(3, points);
     }
 
+    /**
+     * @param alpha progression on curve.
+     * @return the point on a curve (in vector form).
+     */
     @Override
-    public Vector getWaypoint(double alpha) {
+    public Vector getPoint(double alpha) {
         double x = points[0].x * Math.pow(1 - alpha, 3) + points[1].x * 3 * Math.pow(1 - alpha, 2) * alpha +
                 points[2].x * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].x * Math.pow(alpha, 3);
         double y = points[0].y * Math.pow(1 - alpha, 3) + points[1].y * 3 * Math.pow(1 - alpha, 2) * alpha +
@@ -40,6 +62,11 @@ public class CubicBezierSegment extends Segment {
         return point;
     }
 
+    /**
+     * @param alpha progression on curve.
+     * @return a Vector that contains the x
+     * and y components of the slope of the point.
+     */
     @Override
     public Vector differentiateC(double alpha) {
         //uses equation for bezier derivatives: Σi=0,n Bn-1,i(t) * n * (Pi+1 - pi)
@@ -53,6 +80,11 @@ public class CubicBezierSegment extends Segment {
         return new Vector(dx, dy);
     }
 
+    /**
+     * @param from a point on the curve.
+     * @param to another point on the curve.
+     * @return the arclength between these two points.
+     */
     @Override
     public double integrate(double from, double to) {
         //uses 2 point Gauss Quadrature method to approximate arc length: ∫a,b f(x)dx = Σi=0,n Ci*f(xi)
