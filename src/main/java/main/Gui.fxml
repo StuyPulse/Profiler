@@ -127,7 +127,7 @@
                </padding>
                <children>
                   <Button fx:id="add" mnemonicParsing="false" onAction="#addPoint" text="Add Point" />
-                  <Button fx:id="delete" mnemonicParsing="false" onAction="#deletePoint" text="Delete Point" />
+                  <Button fx:id="delete" mnemonicParsing="false" onAction="#delPoint" text="Delete Point" />
                </children>
             </HBox>
          </children>

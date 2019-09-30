@@ -21,7 +21,8 @@ public class CubicBezierSegment extends Segment {
             Vector endOffset = Vector.PolarPoint(-gplength, endwp.heading);
             points[1] = startwp.offsetCartesian(startOffset.x, startOffset.y).toVector();
             points[2] = endwp.offsetCartesian(endOffset.x, endOffset.y).toVector();
-            return null;
+
+            return new CubicBezierSegment(points);
         }
 
     }
@@ -31,7 +32,7 @@ public class CubicBezierSegment extends Segment {
     }
 
     @Override
-    public Vector getWaypoint(double alpha) {
+    public Vector getCors(double alpha) {
         double x = points[0].x * Math.pow(1 - alpha, 3) + points[1].x * 3 * Math.pow(1 - alpha, 2) * alpha +
                 points[2].x * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].x * Math.pow(alpha, 3);
         double y = points[0].y * Math.pow(1 - alpha, 3) + points[1].y * 3 * Math.pow(1 - alpha, 2) * alpha +
@@ -41,7 +42,7 @@ public class CubicBezierSegment extends Segment {
     }
 
     @Override
-    public Vector differentiateC(double alpha) {
+    public Vector differentiateVector(double alpha) {
         //uses equation for bezier derivatives: Σi=0,n Bn-1,i(t) * n * (Pi+1 - pi)
         //https://pomax.github.io/bezierinfo/#derivatives
         double dx = 3 * Math.pow(1 - alpha, 2) * (points[1].x - points[0].x) +
@@ -59,13 +60,13 @@ public class CubicBezierSegment extends Segment {
         //https://pomax.github.io/bezierinfo/#arclength
         //https://www.youtube.com/watch?v=unWguclP-Ds&feature=BFa&list=PLC8FC40C714F5E60F&index=1
         //values found here: https://pomax.github.io/bezierinfo/legendre-gauss.html
-        double[] weights = {1.0000000000000000, 1.0000000000000000};
-        double[] abscissa = {-0.5773502691896257, 0.5773502691896257};
+        final double[] WEIGHTS = {1.0000000000000000, 1.0000000000000000};
+        final double[] ABSCISSA = {-0.5773502691896257, 0.5773502691896257};
         double sum = 0;
-        for(int i = 0; i < 3; i++) {
-            double pt = ((to - from) / 2.0) * abscissa[i] + ((to + from) / 2.0);
-            Vector d = differentiateC(pt);
-            sum += weights[i] * Math.sqrt(d.x*d.x + d.y*d.y);
+        for(int i = 0; i < 2; i++) {
+            double pt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
+            Vector d = differentiateVector(pt);
+            sum += WEIGHTS[i] * Math.sqrt(d.x*d.x + d.y*d.y);
         }
         return ((to - from) / 2.0) * sum;
     }

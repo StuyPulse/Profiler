@@ -126,7 +126,7 @@ public class Trajectory {
 					double timeDiff = ct.get(i + 1).time - ct.get(i).time;
 					double timeNeed = time - ct.get(i).time;
 					double percentNeed = timeNeed / timeDiff;
-					double percentage = (index + percentNeed) / (sampleRate * spline.size());
+					double percentage = (i + percentNeed) / (sampleRate * spline.size());
 					traj.add(spline.getWaypoint(percentage));
 					index = i;
 					break;
@@ -147,9 +147,6 @@ public class Trajectory {
 		sample();
 		calculate();
 		timeParameterize();
-
-		System.out.println("fin");
-		System.out.println(traj.size() + " points");
 	}
 
 	public enum FitMethod {

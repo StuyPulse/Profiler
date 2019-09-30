@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Gui {
+
     @FXML
     public ChoiceBox<String> spline = null;
     public TextField dt = null;
@@ -43,10 +44,37 @@ public class Gui {
 
     private Trajectory trajectory;
 
+    private void makeTraj() {
+        Waypoint[] waypoints = new Waypoint[x.getItems().size()];
+        for(int i = 0; i < waypoints.length; i++) {
+            waypoints[i] = new Waypoint(Double.parseDouble(x.getItems().get(i)),
+                    Double.parseDouble(y.getItems().get(i)),
+                    Math.toRadians(Double.parseDouble(h.getItems().get(i))));
+        }
+        int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
+        trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, tightness.getValue(),
+                Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
+                Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
+                waypoints);
+        trajectory.generate();
+    }
+
+    private String getDateTimeString() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMddyyyy_HHmmss");
+        LocalDateTime now = LocalDateTime.now();
+        return dtf.format(now);
+    }
+
     private void addPoint (double x, double y, double h) {
         this.x.getItems().add(Double.toString(x));
         this.y.getItems().add(Double.toString(y));
         this.h.getItems().add(Double.toString(h));
+    }
+
+    private void delPoint (int index) {
+        this.x.getItems().remove(index);
+        this.y.getItems().remove(index);
+        this.h.getItems().remove(index);
     }
 
     @FXML
@@ -87,17 +115,10 @@ public class Gui {
     }
 
     @FXML
-    public void deletePoint() {
+    public void delPoint() {
         int index = x.getSelectionModel().getSelectedIndices().get(0);
-        if(index != -1) {
-            x.getItems().remove(index);
-            y.getItems().remove(index);
-            h.getItems().remove(index);
-        }else {
-            x.getItems().remove(x.getItems().size()-1);
-            y.getItems().remove(y.getItems().size()-1);
-            h.getItems().remove(h.getItems().size()-1);
-        }
+        index = index != -1 ? index : x.getItems().size()-1;
+        delPoint(index);
     }
 
     @FXML
@@ -108,18 +129,7 @@ public class Gui {
         File file = chooser.showSaveDialog(new Stage());
 
         try {
-            Waypoint[] waypoints = new Waypoint[x.getItems().size()];
-            for(int i = 0; i < waypoints.length; i++) {
-                waypoints[i] = new Waypoint(Double.parseDouble(x.getItems().get(i)),
-                        Double.parseDouble(y.getItems().get(i)),
-                        Math.toRadians(Double.parseDouble(h.getItems().get(i))));
-            }
-            int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
-            trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, tightness.getValue(),
-                    Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
-                    Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
-                    waypoints);
-            trajectory.generate();
+            makeTraj();
             CSV.exportCSV(file, trajectory);
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");
@@ -132,7 +142,7 @@ public class Gui {
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("javascript object notation", "*.json"));
         chooser.setInitialFileName(getDateTimeString() + ".json");
         File file = chooser.showSaveDialog(new Stage());
-        // TODO : generate trajectory before saving
+        makeTraj();
         JSON.save(trajectory, file);
     }
 
@@ -154,11 +164,7 @@ public class Gui {
         }
     }
 
-    private String getDateTimeString() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMddyyyy_HHmmss");
-        LocalDateTime now = LocalDateTime.now();
-        return dtf.format(now);
-    }
+
 
     @FXML
     public void initialize() {
@@ -199,4 +205,5 @@ public class Gui {
 
         trajectory = null;
     }
+
 }

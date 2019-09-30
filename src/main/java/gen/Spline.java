@@ -3,8 +3,6 @@ package gen;
 import gen.segments.Segment;
 import gen.segments.Segment.SegmentFactory;
 
-import java.util.Objects;
-
 public class Spline {
 
     private static class Position {
@@ -38,20 +36,19 @@ public class Spline {
         return new Position(s, a);
     }
 
-    public Vector getPoint(double alpha) {
+    private Vector getPoint(double alpha) {
         Position pos = findPoint(alpha);
-        // TODO null pointer exception
-        return segments[pos.seg].getWaypoint(pos.alpha);
+        return segments[pos.seg].getCors(pos.alpha);
     }
 
-    public Vector headingC(double alpha) {
+    public Vector headingVector(double alpha) {
         Position pos = findPoint(alpha);
-        return segments[pos.seg].differentiateC(pos.alpha);
+        return segments[pos.seg].differentiateVector(pos.alpha);
     }
 
-    public double headingP(double alpha) {
+    public double headingAngle(double alpha) {
         Position pos = findPoint(alpha);
-        return segments[pos.seg].differentiateP(pos.alpha);
+        return segments[pos.seg].differentiateAngle(pos.alpha);
     }
 
     public double distance(double from, double to) {
@@ -64,12 +61,10 @@ public class Spline {
         }
     }
 
-    // TODO create lite version of functions above to speed up this process
-
     public Waypoint getWaypoint(double alpha) {
-        Waypoint wp = new Waypoint(getPoint(alpha), headingP(alpha));
+        Waypoint wp = new Waypoint(getPoint(alpha), headingAngle(alpha));
         wp.distanceFromStart = distance(0, alpha);
-        wp.distanceFromEnd   = distance(alpha, size());
+        wp.distanceFromEnd   = distance(alpha, 1.0);
         return wp;
     }
 
@@ -91,20 +86,5 @@ public class Spline {
         for(Segment segment : segments) s += segment.toString() + "\n";
         return s;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if(o.getClass().equals(this.getClass())) {
-            Spline s = (Spline) o;
-            if(this.segments.length != s.segments.length) return false;
-            for(int i = 0; i < segments.length; i++) {
-                if(!this.segments[i].equals(s.segments[i])) return false;
-            }
-            return true;
-        }else return false;
-    }
-
-    @Override
-    public int hashCode() { return Objects.hash(segments, tightness); }
 
 }
