@@ -13,3 +13,5 @@ workspace.xml
 usage.statistics.xml
 tasks.xml
 .idea/shelf/*
+.idea/
+.gradle/

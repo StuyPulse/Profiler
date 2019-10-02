@@ -52,7 +52,7 @@ public abstract class Segment {
     /**
      * @param alpha spline parameter from [0, 1]
      *              indicates progression on curve.
-     * @return point on the spline
+     * @return point on the spline.
      */
     public abstract Vector getCors(double alpha);
 
