@@ -1,12 +1,15 @@
-/**
- * CubicHermiteSegment.java
- * @author Tahsin Ahmed
- * A segment that is generated through the cubic hermite equations.
- */
 package gen.segments;
 
 import gen.Vector;
 import gen.Waypoint;
+
+/**
+ * CubicHermiteSegment.java
+ *
+ * @author Tahsin Ahmed
+ *
+ * A segment that is generated through the cubic hermite equations.
+ */
 
 public class CubicHermiteSegment extends Segment {
 

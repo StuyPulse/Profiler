@@ -24,7 +24,7 @@ public class JSON {
             root.put("jerk", traj.maxJerk);
             root.put("tightness", traj.spline.tightness);
             JSONArray waypoints = new JSONArray();
-            for (Waypoint wp : traj.spline.waypoints()) {
+            for (Waypoint wp : traj.spline.getControlPoints()) {
                 JSONArray jp = new JSONArray();
                 jp.add(wp.x);
                 jp.add(wp.y);

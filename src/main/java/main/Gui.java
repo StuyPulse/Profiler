@@ -159,7 +159,7 @@ public class Gui {
         jerk.setText(Double.toString(trajectory.maxJerk));
         width.setText(Double.toString(trajectory.wheelBaseWidth));
         tightness.setValue(trajectory.spline.tightness);
-        for (Waypoint w : trajectory.spline.waypoints()) {
+        for(Waypoint w : trajectory.spline.getControlPoints()) {
             addPoint(w.x, w.y, w.heading);
         }
     }

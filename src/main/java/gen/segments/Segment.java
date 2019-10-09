@@ -1,16 +1,19 @@
-/**
- * Spline.java
- * @author Tahsin Ahmed
- * A template class used to represent different kinds of
- * extremely small parts (segments) of a curve.
- */
-
 package gen.segments;
 
 import gen.Vector;
 import gen.Waypoint;
 
 import java.util.Objects;
+
+/**
+ * Spline.java
+ *
+ * @author Tahsin Ahmed
+ *
+ * A template class used to represent different kinds of
+ * extremely small parts (segments) of a curve.
+ */
+
 
 public abstract class Segment {
 

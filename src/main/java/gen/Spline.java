@@ -1,10 +1,14 @@
+package gen;
+import gen.segments.Segment;
+import gen.segments.Segment.SegmentFactory;
+
 /**
+ * Spline.java
+ *
  * @author Tahsin Ahmed
+ *
  * A spline is made up of a bunch of segments.
  */
-package gen;
- import gen.segments.Segment;
-import gen.segments.Segment.SegmentFactory;
 
 public class Spline {
 
@@ -124,7 +128,7 @@ public class Spline {
         return segments.length;
     }
 
-    /** Gets control points. (Vectors that will define the curve). */
+    /** Gets control points: Vectors that will define the curve. */
     public Waypoint[] getControlPoints() {
         Waypoint[] w = new Waypoint[size() + 1];
         for (int i = 0; i < size(); i++) {

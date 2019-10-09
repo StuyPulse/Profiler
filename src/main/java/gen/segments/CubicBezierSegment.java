@@ -1,13 +1,15 @@
-/**
- * CubicBezierSegment.java
- * @author Tahsin Ahmed
- * A segment that is generated through the cubic bezier equations.
- */
-
 package gen.segments;
 
 import gen.Vector;
 import gen.Waypoint;
+
+/**
+ * CubicBezierSegment.java
+ *
+ * @author Tahsin Ahmed
+ *
+ * A segment that is generated through the cubic bezier equations.
+ */
 
 public class CubicBezierSegment extends Segment {
     /** A cubic bezier segment generator
