@@ -3,9 +3,19 @@ package gen;
 import gen.segments.CubicBezierSegment.CubicBezierSegmentFactory;
 import gen.segments.CubicHermiteSegment.CubicHermiteSegmentFactory;
 
+/**
+ * Trajectory.java
+ *
+ * @author Tahsin Ahmed
+ *
+ * Uses a spline to generate a trajectory.
+ * Includes time, velocity, acceleration, jerk.
+ */
+
 import java.util.ArrayList;
 
 public class Trajectory {
+
 	private ArrayList<Waypoint> traj;
 
 	public final int sampleRate;
@@ -15,6 +25,19 @@ public class Trajectory {
 	public final FitMethod method;
 	public final Spline spline;
 
+	/**
+	 * @param method which type of spline to use.
+	 * @param sampleRate how many points per segment to use to sample curve.
+	 *                   higher rates give better results.
+	 * @param tightness a scale factor for heading.
+	 *                  affects how robot turns through out the path.
+	 * @param dt how far apart each point should be in time.
+	 * @param wheelBaseWidth width of robot.
+	 * @param maxVelocity maximum allowed velocity of path.
+	 * @param maxAcceleration maximum allowed acceleration of path.
+	 * @param maxJerk maximum allowed jerk of path.
+	 * @param waypoints control points used to generate spline.
+	 */
 	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		this.method = method;
 		switch(method) {
@@ -34,10 +57,19 @@ public class Trajectory {
 		traj = new ArrayList<>();
 	}
 
+	/**
+	 * @param value value to be bounded
+	 * @param max highest allowed value
+	 * @param min lowest allowed value
+	 * @return value bounded between min and max
+	 */
 	private static double bound(double value, double max, double min) {
 		return Math.min(Math.max(value, min), max);
 	}
 
+	/**
+	 * @return waypoints of the trajectory.
+	 */
 	public ArrayList<Waypoint> getPoints() {
 		try {
 			ArrayList<Waypoint> clone = new ArrayList<>(traj.size());
@@ -51,7 +83,10 @@ public class Trajectory {
 		}
 	}
 
-	// samples the spline by finding sampleRate # of points per segment
+	/**
+	 * samples the spline by generating sampleRate #
+	 * of points per segment.
+	 */
 	private void sample() {
 		if (!traj.isEmpty()) traj.clear();
 		int NUMBER_OF_POINTS = sampleRate * spline.size();
@@ -61,6 +96,10 @@ public class Trajectory {
 		}
 	}
 
+	/**
+	 * generates a trapezodial velocity curve
+	 * with maxVelocity as cruise velocity.
+	 */
 	// adapted from jackfel's (team 3641) white paper which explains how to find velocity found here:
 	// https://www.chiefdelphi.com/t/how-does-a-robot-pathfinder-motion-profiler-work/165533
 	private void getVelocities() {
@@ -77,7 +116,10 @@ public class Trajectory {
 	}
 
 
-
+	/**
+	 * finds the designated time at each pt
+	 * using distance vs. velocity.
+	 */
 	private void getTimes() {
 		double totalTime = 0;
 		traj.get(0).time = totalTime;
@@ -92,6 +134,10 @@ public class Trajectory {
 		}
 	}
 
+	/**
+	 * finds accelerations at each point
+	 * using velocity vs. time.
+	 */
 	private void getAccelerations() {
 		traj.get(0).acceleration = 0;
 		for(int i = 1; i < traj.size(); i++) {
@@ -101,6 +147,10 @@ public class Trajectory {
 		}
 	}
 
+	/**
+	 * finds jerk at each point
+	 * using acceleration vs. time.
+	 */
 	private void getJerks() {
 		traj.get(0).jerk = 0;
 		for(int i = 1; i < traj.size(); i++) {
@@ -110,7 +160,10 @@ public class Trajectory {
 		}
 	}
 
-	// time Parameterize the trajectory such that points are a certain time away
+	/**
+	 * uses a sample trajectory to find specific pts
+	 * that are dt apart from each other.
+	 */
 	private void timeParameterize() {
 		double totalTime = traj.get(traj.size() - 1).time;
 		// delete the old trajectory and save it elsewhere
@@ -136,6 +189,9 @@ public class Trajectory {
 		calculate();
 	}
 
+	/**
+	 * fully calculates trajectory from a samples spline.
+	 */
 	private void calculate() {
 		getVelocities();
 		getTimes();
@@ -143,22 +199,37 @@ public class Trajectory {
 		getJerks(); //60 ft/sec^3 best for trapezoidal motion profile
 	}
 
+	/**
+	 * samples spline and then generates a time parameterized trajectory.
+	 */
 	public void generate() {
 		sample();
 		calculate();
 		timeParameterize();
 	}
 
+	/**
+	 * @author Tahsin Ahmed
+	 *
+	 * Types of ways to generate splines.
+	 */
 	public enum FitMethod {
 
 		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite");
 
 		private String method;
 
+		/**
+		 * @param method name of method.
+		 */
 		FitMethod(String method) {
 			this.method = method;
 		}
 
+		/**
+		 * @param str name of method in String format.
+		 * @return method as an enum.
+		 */
 		public static FitMethod findMethod(String str) {
 			for (FitMethod method : FitMethod.values()) {
 				if (method.getMethod().equals(str.toLowerCase())) return method;
@@ -177,12 +248,20 @@ public class Trajectory {
 
 	}
 
+	/**
+	 * @author Tahsin Ahmed
+	 *
+	 * Some pre-defined values for sample rate of spline.
+	 */
     public enum SampleRate {
 
 		LOW(1000), MEDIUM(10000), HIGH(100000);
 
 		private int rate;
 
+		/**
+		 * @param rate sample rate
+		 */
 		SampleRate(int rate) {
 			this.rate = rate;
 		}
