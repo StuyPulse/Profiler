@@ -10,7 +10,6 @@ import gen.Waypoint;
  *
  * A segment that is generated through the cubic hermite equations.
  */
-
 public class CubicHermiteSegment extends Segment {
 
     /** A cubic segment generator used by the corresponding spline.  */
