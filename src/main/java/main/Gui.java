@@ -170,6 +170,7 @@ public class Gui {
     public void initialize() {
         spline.getItems().add("cubic hermite");
         spline.getItems().add("cubic bezier");
+        spline.getItems().add("quintic hermite")
         spline.setValue("cubic hermite");
 
         x.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {

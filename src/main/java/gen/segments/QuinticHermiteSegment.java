@@ -27,7 +27,6 @@ public class QuinticHermiteSegment extends Segment {
                                                Waypoint startwp, Waypoint endwp) {
             double scale = startwp.distanceTo(endwp) / 2 * tightness * 3;
 
-            //
             Vector[] points = new Vector[6];
             points[0] = startwp;
             points[1] = endwp;
@@ -37,7 +36,8 @@ public class QuinticHermiteSegment extends Segment {
 
             points[4] = new Vector(0, 0);
             points[5] = new Vector(0, 0);
-            return null;
+
+            return new QuinticHermiteSegment(points)
         }
 
     }

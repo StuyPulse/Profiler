@@ -215,7 +215,8 @@ public class Trajectory {
 	 */
 	public enum FitMethod {
 
-		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite");
+		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite"),
+		QUINTIC_HERMITE("quintic hermite");
 
 		private String method;
 
