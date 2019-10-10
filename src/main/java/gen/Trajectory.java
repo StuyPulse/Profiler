@@ -2,6 +2,7 @@ package gen;
 
 import gen.segments.CubicBezierSegment.CubicBezierSegmentFactory;
 import gen.segments.CubicHermiteSegment.CubicHermiteSegmentFactory;
+import gen.segments.QuinticHermiteSegment.QuinticHermiteSegmentFactory;
 
 /**
  * Trajectory.java
@@ -41,6 +42,9 @@ public class Trajectory {
 	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		this.method = method;
 		switch(method) {
+			case QUINTIC_HERMITE:
+				spline = new Spline(tightness, new QuinticHermiteSegmentFactory());
+				break;
 			case CUBIC_BEZIER:
 				spline = new Spline(tightness, new CubicBezierSegmentFactory(), waypoints);
 				break;

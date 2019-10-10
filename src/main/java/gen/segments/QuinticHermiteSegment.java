@@ -37,7 +37,7 @@ public class QuinticHermiteSegment extends Segment {
             points[4] = new Vector(0, 0);
             points[5] = new Vector(0, 0);
 
-            return new QuinticHermiteSegment(points)
+            return new QuinticHermiteSegment(points);
         }
 
     }
