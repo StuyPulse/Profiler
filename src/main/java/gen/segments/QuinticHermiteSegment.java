@@ -62,21 +62,20 @@ public class QuinticHermiteSegment extends Segment {
                 Math.pow(alpha, 4) - 6 * Math.pow(alpha, 5);
         double p1 = 10 * Math.pow(alpha, 3) - 15 * Math.pow(alpha, 4) +
                 6 * Math.pow(alpha, 5);
-        double v0 = alpha - 6 * Math.pow(alpha, 3) +  8 *
+        double dp0 = alpha - 6 * Math.pow(alpha, 3) +  8 *
                 Math.pow(alpha, 4) - 3 * Math.pow(alpha, 5);
-        double v1 = -4 * Math.pow(alpha, 3) + 7 * Math.pow(alpha, 4) - 3 *
+        double dp1 = -4 * Math.pow(alpha, 3) + 7 * Math.pow(alpha, 4) - 3 *
                 Math.pow(alpha, 5);
-        double a0 = 0.5 * Math.pow(alpha, 2) - (3.0 / 2.0) *
+        double dpp0 = 0.5 * Math.pow(alpha, 2) - (3.0 / 2.0) *
                 Math.pow(alpha, 3) + (3.0 / 2.0) * Math.pow(alpha, 4) -
                 0.5 * Math.pow(alpha, 5);
-        double a1 = 0.5 * Math.pow(alpha, 3) - Math.pow(alpha, 4) +
+        double dpp1 = 0.5 * Math.pow(alpha, 3) - Math.pow(alpha, 4) +
                 0.5 * Math.pow(alpha, 5);
 
-        // p0 p1 v0 v1 a0 a1
-        double x = p0 * points[0].x + p1 * points[1].x + v0 * points[2].x + v1 * points[3].x
-                + a0 * points[4].x + a1 * points[5].x;
-        double y = p0 * points[0].y + p1 * points[1].y + v0 * points[2].y + v1 * points[3].y
-                + a0 * points[4].y + a1 * points[5].y;
+        double x = p0 * points[0].x + p1 * points[1].x + dp0 * points[2].x + dp1 * points[3].x
+                + dpp0 * points[4].x + dpp1 * points[5].x;
+        double y = p0 * points[0].y + p1 * points[1].y + dp0 * points[2].y + dp1 * points[3].y
+                + dpp0 * points[4].y + dpp1 * points[5].y;
 
         Vector point = new Vector(x, y);
         return point;
@@ -92,22 +91,22 @@ public class QuinticHermiteSegment extends Segment {
     public Vector differentiateVector(double alpha) {
         double p0 = -30 * Math.pow(alpha, 2) + 60 * Math.pow(alpha, 3) -
                 30 * Math.pow(alpha, 4);
-        double p1 = -30 * Math.pow(alpha, 2) - 60 * Math.pow(alpha, 3) +
+        double p1 = 30 * Math.pow(alpha, 2) - 60 * Math.pow(alpha, 3) +
                 30 * Math.pow(alpha, 4);
-        double v0 = 1 - 18 * Math.pow(alpha, 2) + 32 * Math.pow(alpha, 3) -
+        double dp0 = 1 - 18 * Math.pow(alpha, 2) + 32 * Math.pow(alpha, 3) -
                 15 * Math.pow(alpha, 4);
-        double v1 = -12 * Math.pow(alpha, 2) + 28 * Math.pow(alpha, 3) -
+        double dp1 = -12 * Math.pow(alpha, 2) + 28 * Math.pow(alpha, 3) -
                 15 * Math.pow(alpha, 4);
-        double a0 = alpha - (9.0 / 2) * Math.pow(alpha, 2) + 6 *
+        double ddp0 = alpha - (9.0 / 2) * Math.pow(alpha, 2) + 6 *
                 Math.pow(alpha, 3) - (5.0 / 2) * Math.pow(alpha, 4);
-        double a1 = (3.0 / 2) * Math.pow(alpha, 2) - 4 * Math.pow(alpha, 3) +
+        double ddp1 = (3.0 / 2) * Math.pow(alpha, 2) - 4 * Math.pow(alpha, 3) +
                 (5.0 / 2) * Math.pow(alpha, 4);
 
-        double dx = points[0].x * p0 + points[1].x * p1 + points[2].x * v0 +
-                points[3].x * v1 + points[4].x * a0 + points[5].x * a1;
+        double dx = points[0].x * p0 + points[1].x * p1 + points[2].x * dp0 +
+                points[3].x * dp1 + points[4].x * ddp0 + points[5].x * ddp1;
 
-        double dy = points[0].y * p0 + points[1].y * p1 + points[2].y * v0 +
-                points[3].y * v1 + points[4].y * a0 + points[5].y * a1;
+        double dy = points[0].y * p0 + points[1].y * p1 + points[2].y * dp0 +
+                points[3].y * dp1 + points[4].y * ddp0 + points[5].y * ddp1;
 
         Vector d = new Vector(dx, dy);
         return d;
