@@ -36,14 +36,14 @@ public class Trajectory {
 	 * @param wheelBaseWidth width of robot.
 	 * @param maxVelocity maximum allowed velocity of path.
 	 * @param maxAcceleration maximum allowed acceleration of path.
-	 * @param maxJerk maximum allowed jerk of path.
+	 * @param maxJerk maximum allowed jerk of path.xessss3
 	 * @param waypoints control points used to generate spline.
 	 */
 	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		this.method = method;
 		switch(method) {
 			case QUINTIC_HERMITE:
-				spline = new Spline(tightness, new QuinticHermiteSegmentFactory());
+				spline = new Spline(tightness, new QuinticHermiteSegmentFactory(), waypoints);
 				break;
 			case CUBIC_BEZIER:
 				spline = new Spline(tightness, new CubicBezierSegmentFactory(), waypoints);
@@ -127,7 +127,7 @@ public class Trajectory {
 	private void getTimes() {
 		double totalTime = 0;
 		traj.get(0).time = totalTime;
-		for(int i = 1; i < traj.size(); i++) {
+		for (int i = 1; i < traj.size(); i++) {
 			double dd = traj.get(i).distanceFromStart - traj.get(i-1).distanceFromStart;
 			double dv = traj.get(i).velocity - traj.get(i-1).velocity;
 			double minVel = Math.min(traj.get(i).velocity, traj.get(i-1).velocity);
@@ -157,7 +157,7 @@ public class Trajectory {
 	 */
 	private void getJerks() {
 		traj.get(0).jerk = 0;
-		for(int i = 1; i < traj.size(); i++) {
+		for (int i = 1; i < traj.size(); i++) {
 			double accelerationDiff = traj.get(i).acceleration - traj.get(i - 1).acceleration;
 			double timeDiff = traj.get(i).time - traj.get(i - 1).time;
 			traj.get(i).jerk = bound(accelerationDiff / timeDiff, maxJerk, -maxJerk);

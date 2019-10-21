@@ -95,10 +95,10 @@ public class Spline {
         return segments[pos.seg].differentiateAngle(pos.alpha);
     }
 
-    /**
+    /**-[
      * @param from start progression on curve.
      * @param to end progression on curve.
-     * @return
+     * @return arclength from one point to another.
      */
     public double distance(double from, double to) {
         Position fPos = findPoint(from);

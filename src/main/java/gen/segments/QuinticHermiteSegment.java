@@ -58,24 +58,25 @@ public class QuinticHermiteSegment extends Segment {
     @Override
     public Vector getCors(double alpha) {
         // Quintic Hermite basis functions.
-        double f0 = 1 - 10 * Math.pow(alpha, 3) + 15 *
+        double p0 = 1 - 10 * Math.pow(alpha, 3) + 15 *
                 Math.pow(alpha, 4) - 6 * Math.pow(alpha, 5);
-        double f1 = alpha - 6 * Math.pow(alpha, 3) +  8 *
+        double p1 = 10 * Math.pow(alpha, 3) - 15 * Math.pow(alpha, 4) +
+                6 * Math.pow(alpha, 5);
+        double v0 = alpha - 6 * Math.pow(alpha, 3) +  8 *
                 Math.pow(alpha, 4) - 3 * Math.pow(alpha, 5);
-        double f2 = (1.0 / 2.0) * Math.pow(alpha, 2) - (3.0 / 2.0) *
-                Math.pow(alpha, 3) + (3.0 / 2.0) * Math.pow(alpha, 4) -
-                (1.0 / 2.0) * Math.pow(alpha, 5);
-        double f3 = (1.0 / 2.0) * Math.pow(alpha, 3) - Math.pow(alpha, 4) +
-                (1.0 / 2.0) * Math.pow(alpha, 5);
-        double f4 = -4 * Math.pow(alpha, 3) + 7 * Math.pow(alpha, 4) - 3 *
+        double v1 = -4 * Math.pow(alpha, 3) + 7 * Math.pow(alpha, 4) - 3 *
                 Math.pow(alpha, 5);
-        double f5 = 10 * Math.pow(alpha, 3) - 15 * Math.pow(alpha, 3) -
-                15 * Math.pow(alpha, 4) + 6 * Math.pow(alpha, 5);
+        double a0 = 0.5 * Math.pow(alpha, 2) - (3.0 / 2.0) *
+                Math.pow(alpha, 3) + (3.0 / 2.0) * Math.pow(alpha, 4) -
+                0.5 * Math.pow(alpha, 5);
+        double a1 = 0.5 * Math.pow(alpha, 3) - Math.pow(alpha, 4) +
+                0.5 * Math.pow(alpha, 5);
 
-        double x = f0 * points[0].x + f1 * points[2].x + f2 * points[4].x + points[5].x *
-                f3 + points[3].x * f4 + points[1].x * f5;
-        double y = f0 * points[0].y + f1 * points[2].y + f2 * points[4].y + points[5].y *
-                f3 + points[3].y * f4 + points[1].y * f5;
+        // p0 p1 v0 v1 a0 a1
+        double x = p0 * points[0].x + p1 * points[1].x + v0 * points[2].x + v1 * points[3].x
+                + a0 * points[4].x + a1 * points[5].x;
+        double y = p0 * points[0].y + p1 * points[1].y + v0 * points[2].y + v1 * points[3].y
+                + a0 * points[4].y + a1 * points[5].y;
 
         Vector point = new Vector(x, y);
         return point;
@@ -89,24 +90,24 @@ public class QuinticHermiteSegment extends Segment {
      */
     @Override
     public Vector differentiateVector(double alpha) {
-        double f0 = -30 * Math.pow(alpha, 2) + 60 * Math.pow(alpha, 3) -
+        double p0 = -30 * Math.pow(alpha, 2) + 60 * Math.pow(alpha, 3) -
                 30 * Math.pow(alpha, 4);
-        double f1 = 1 - 18 * Math.pow(alpha, 2) + 32 * Math.pow(alpha, 3) -
+        double p1 = -30 * Math.pow(alpha, 2) - 60 * Math.pow(alpha, 3) +
+                30 * Math.pow(alpha, 4);
+        double v0 = 1 - 18 * Math.pow(alpha, 2) + 32 * Math.pow(alpha, 3) -
                 15 * Math.pow(alpha, 4);
-        double f2 = alpha - (9.0 / 2) * Math.pow(alpha, 2) + 6 *
+        double v1 = -12 * Math.pow(alpha, 2) + 28 * Math.pow(alpha, 3) -
+                15 * Math.pow(alpha, 4);
+        double a0 = alpha - (9.0 / 2) * Math.pow(alpha, 2) + 6 *
                 Math.pow(alpha, 3) - (5.0 / 2) * Math.pow(alpha, 4);
-        double f3 = (3.0 / 2) * Math.pow(alpha, 2) - 4 * Math.pow(alpha, 3) +
+        double a1 = (3.0 / 2) * Math.pow(alpha, 2) - 4 * Math.pow(alpha, 3) +
                 (5.0 / 2) * Math.pow(alpha, 4);
-        double f4 = -12 * Math.pow(alpha, 2) + 28 * Math.pow(alpha, 3) -
-                15 * Math.pow(alpha, 4);
-        double f5 = -30 * Math.pow(alpha, 2) - 60 * Math.pow(alpha, 3) +
-                30 * Math.pow(alpha, 4);
 
-        double dx = points[0].x * f0 + points[1].x * f5 + points[2].x * f1 +
-                points[3].x * f4 + points[4].x * f2 + points[5].x *  f3;
+        double dx = points[0].x * p0 + points[1].x * p1 + points[2].x * v0 +
+                points[3].x * v1 + points[4].x * a0 + points[5].x * a1;
 
-        double dy = points[0].y * f0 + points[1].y * f5 + points[2].y * f1 +
-                points[3].y * f4 + points[4].y * f2 + points[5].y *  f3;
+        double dy = points[0].y * p0 + points[1].y * p1 + points[2].y * v0 +
+                points[3].y * v1 + points[4].y * a0 + points[5].y * a1;
 
         Vector d = new Vector(dx, dy);
         return d;
@@ -121,8 +122,8 @@ public class QuinticHermiteSegment extends Segment {
     public double integrate(double from, double to) {
         //uses 3 point Gauss Quadrature method to approximate arc length: ∫a,b f(x)dx = Σi=0,n Ci*f(xi)
         // values found here: https://pomax.github.io/bezierinfo/legendre-gauss.html
-        final double[] WEIGHTS = {0.8888888888888888, 0.5555555555555556, 0.5555555555555556};
-        final double[] ABSCISSA = {0.0000000000000000, -0.7745966692414834, 0.7745966692414834};
+        final double[] WEIGHTS = {0.5555555555555556, 0.8888888888888888, 0.5555555555555556};
+        final double[] ABSCISSA = {-0.7745966692414834, 0.0000000000000000, 0.7745966692414834};
         double sum = 0;
         for (int i = 0; i < 3; i++) {
             double transformedPt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
@@ -130,5 +131,8 @@ public class QuinticHermiteSegment extends Segment {
             sum += WEIGHTS[i] * Math.sqrt(d.x * d.x + d.y * d.y);
         }
         return ((to - from) / 2.0) * sum;
+//        Vector init = getCors(from);
+//        Vector fin = getCors(to);
+//        return Math.sqrt(Math.pow((fin.x - init.x), 2) + Math.pow((fin.y - init.y), 2));
     }
 }
