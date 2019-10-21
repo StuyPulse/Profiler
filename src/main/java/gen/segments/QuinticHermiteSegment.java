@@ -130,8 +130,5 @@ public class QuinticHermiteSegment extends Segment {
             sum += WEIGHTS[i] * Math.sqrt(d.x * d.x + d.y * d.y);
         }
         return ((to - from) / 2.0) * sum;
-//        Vector init = getCors(from);
-//        Vector fin = getCors(to);
-//        return Math.sqrt(Math.pow((fin.x - init.x), 2) + Math.pow((fin.y - init.y), 2));
     }
 }
