@@ -67,6 +67,12 @@ public class Waypoint extends Vector {
 		return point.offsetCartesian(x, y);
 	}
 
+	public Waypoint rotate(double theta) {
+		double x = Math.cos(heading + theta);
+		double y = Math.sin(heading + theta);
+		return
+	}
+
 	/** Converts a waypoint into a vector. */
 	public Vector toVector() {
 		return new Vector(x, y);
