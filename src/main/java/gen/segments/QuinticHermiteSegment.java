@@ -25,7 +25,7 @@ public class QuinticHermiteSegment extends Segment {
         @Override
         public QuinticHermiteSegment getInstance(double tightness,
                                                Waypoint startwp, Waypoint endwp) {
-            double scale = startwp.distanceTo(endwp) / 2 * tightness * 3;
+            double scale = startwp.distanceTo(endwp) * tightness;
 
             Vector[] points = new Vector[6];
             points[0] = startwp;

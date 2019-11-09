@@ -30,7 +30,7 @@ public class Gui {
     public TextField acceleration = null;
     public TextField jerk = null;
     public TextField width = null;
-    public Slider tightness = null;
+    public TextField tightness = null;
 
     public ListView<String> x = null;
     public ListView<String> y = null;
@@ -52,7 +52,7 @@ public class Gui {
                     Math.toRadians(Double.parseDouble(h.getItems().get(i))));
         }
         int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
-        trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, tightness.getValue(),
+        trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, Double.parseDouble(tightness.getText()),
                 Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
                 Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
                 waypoints);
@@ -158,7 +158,7 @@ public class Gui {
         acceleration.setText(Double.toString(trajectory.maxAcceleration));
         jerk.setText(Double.toString(trajectory.maxJerk));
         width.setText(Double.toString(trajectory.wheelBaseWidth));
-        tightness.setValue(trajectory.spline.tightness);
+        tightness.setText(Double.toString(trajectory.spline.tightness));
         for(Waypoint w : trajectory.spline.getControlPoints()) {
             addPoint(w.x, w.y, w.heading);
         }
@@ -171,6 +171,7 @@ public class Gui {
         spline.getItems().add("cubic hermite");
         spline.getItems().add("cubic bezier");
         spline.getItems().add("quintic hermite");
+        spline.getItems().add("quintic bezier");
         spline.setValue("cubic hermite");
 
         x.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {

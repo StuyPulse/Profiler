@@ -39,38 +39,12 @@ public class Waypoint extends Vector {
 	}
 
 	/**
-	 * @param distance the radius from the origin.
-	 * @param rotation the direction from the origin.
-	 * @return waypoint represented in polar coordinates.
-	 */
-	public static Waypoint PolarPoint(double distance, double rotation) {
-		Vector v = Vector.PolarPoint(distance, rotation);
-		return new Waypoint(v.x, v.y, rotation);
-	}
-
-	/**
 	 * @param xOffset how much you want to offset the x component by.
 	 * @param yOffset how much you want to offset the y component by.
 	 * @return a new waypoint that has been offsetted.
 	 */
 	public Waypoint offsetCartesian(double xOffset, double yOffset) {
 		return new Waypoint(x + xOffset, y + yOffset, heading);
-	}
-
-	/**
-	 * @param offset the length you wish to offset by.
-	 * @param rotation the angle you wish to offset by.
-	 * @return a cartesian waypoint thata is offsetted by polar vales.
-	 */
-	public Waypoint offsetPolar(double offset, double rotation) {
-		Waypoint point = Waypoint.PolarPoint(offset, heading + rotation);
-		return point.offsetCartesian(x, y);
-	}
-
-	public Waypoint rotate(double theta) {
-		double x = Math.cos(heading + theta);
-		double y = Math.sin(heading + theta);
-		return
 	}
 
 	/** Converts a waypoint into a vector. */

@@ -29,22 +29,17 @@ public class QuinticBezierSegment extends Segment {
          */
         @Override
         public QuinticBezierSegment getInstance(double tightness, Waypoint startwp, Waypoint endwp) {
+            double scale = startwp.distanceTo(endwp) * tightness;
+
             Vector[] points = new Vector[6];
             points[0] = startwp;
             points[5] = endwp;
 
-            double distance = startwp.distanceTo(endwp);
-            double dlength = distance / 2 * tightness * 0.6;
-            double ddlength = distance / 2 * tightness * 1.2;
-            Vector dstartOffset = Vector.PolarPoint(dlength, startwp.heading);
-            Vector dendOffset = Vector.PolarPoint(-dlength, endwp.heading);
-            Vector ddstartOffset = Vector.PolarPoint(ddlength, startwp.heading);
-            Vector ddendOffset = Vector.PolarPoint(-ddlength, endwp.heading);
+            points[1] = startwp.offsetCartesian(Math.cos(startwp.heading) * scale * 0.2, Math.sin(startwp.heading) * scale * 0.2);
+            points[4] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale * 0.2, Math.sin(-endwp.heading) * scale * 0.2);
 
-            points[1] = startwp.offsetCartesian(dstartOffset.x, dstartOffset.y).toVector();
-            points[4] = endwp.offsetCartesian(dendOffset.x, dendOffset.y).toVector();
-            points[2] = startwp.offsetCartesian(ddstartOffset.x, ddstartOffset.x).toVector();
-            points[3] = endwp.offsetCartesian(ddendOffset.x, ddendOffset.y).toVector();
+            points[2] = startwp.offsetCartesian( Math.cos(startwp.heading) * scale * 0.4, Math.sin(startwp.heading) * scale * 0.4);
+            points[3] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale * 0.4, Math.sin(-endwp.heading) * scale * 0.4);
 
             return new QuinticBezierSegment(points);
         }
@@ -71,7 +66,7 @@ public class QuinticBezierSegment extends Segment {
         double f4 = 5 * (1 - alpha) * Math.pow(alpha, 4);
         double f5 = Math.pow(alpha, 5);
         double x = points[0].x * f0 + points[1].x * f1 + points[2].x * f2 + points[3].x * f3 +
-                points[4].x * f4 + points[1].x * f5;
+                points[4].x * f4 + points[5].x * f5;
         double y = points[0].y * f0 + points[1].y * f1 + points[2].y * f2 + points[3].y * f3 +
                 points[4].y * f4 + points[5].y * f5;
         Vector point = new Vector(x, y);
@@ -93,12 +88,12 @@ public class QuinticBezierSegment extends Segment {
         double f2 = 6 * Math.pow(alpha, 2) * Math.pow(1 - alpha, 2);
         double f3 = 4 * Math.pow(alpha, 3) * (1 - alpha);
         double f4 = Math.pow(alpha, 4);
-        double dx = f0 * (points[1].x - points[0].x) + f1 * (points[2].x - points[1].x) +
-                f2 * (points[3].x - points[2].x) + f3 * (points[4].x - points[3].x) +
-                f4 * (points[5].x - points[4].x);
-        double dy = f0 * (points[1].y - points[0].y) + f1 * (points[2].y - points[1].y) +
-                f2 * (points[3].y - points[2].y) + f3 * (points[4].y - points[3].y) +
-                f4 * (points[5].y - points[4].y);
+        double dx = 5 * (points[1].x - points[0].x) * f0 + 5 * (points[2].x - points[1].x) * f1 +
+                5 * (points[3].x - points[2].x) * f2 + 5 * (points[4].x - points[3].x) * f3 +
+                5 * (points[5].x - points[4].x) * f4;
+        double dy = 5 * (points[1].y - points[0].y) * f0 + 5 * (points[2].y - points[1].y) * f1 +
+                5 * (points[3].y - points[2].y) * f2 + 5 * (points[4].y - points[3].y) * f3 +
+                5 * (points[5].y - points[4].y) * f4;
         return new Vector(dx, dy);
     }
 
@@ -109,7 +104,7 @@ public class QuinticBezierSegment extends Segment {
      */
     @Override
     public double integrate(double from, double to) {
-        //uses 3 point Gauss Quadrature method to approximate arc length: ∫a,b f(x)dx = Σi=0,n Ci*f(xi)
+        // uses 3 point Gauss Quadrature method to approximate arc length: ∫a,b f(x)dx = Σi=0,n Ci*f(xi)
         // values found here: https://pomax.github.io/bezierinfo/legendre-gauss.html
         final double[] WEIGHTS = {0.5555555555555556, 0.8888888888888888, 0.5555555555555556};
         final double[] ABSCISSA = {-0.7745966692414834, 0.0000000000000000, 0.7745966692414834};

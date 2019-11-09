@@ -30,7 +30,7 @@ public class CubicHermiteSegment extends Segment {
             // scaling is just like with bezier curves except
             // that it is x3 explanation can be found below:
             // http://www2.cs.uregina.ca/~anima/408/Notes/Interpolation/BezierDerivation.htm
-            double scale = startwp.distanceTo(endwp) / 2 * tightness * 3;
+            double scale = startwp.distanceTo(endwp) * tightness;
 
             Vector[] points = new Vector[4];
             points[0] = startwp;

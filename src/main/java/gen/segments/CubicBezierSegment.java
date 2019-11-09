@@ -29,16 +29,14 @@ public class CubicBezierSegment extends Segment {
         public CubicBezierSegment getInstance(double tightness, Waypoint startwp, Waypoint endwp) {
             // taken from team 3641's method of calculating bezier curves found here:
             // https://github.com/JackToaster/FlyingToasters2018/blob/master/src/path_generation/Path.java
+            double scale = startwp.distanceTo(endwp) * tightness;
+
             Vector[] points = new Vector[4];
             points[0] = startwp;
             points[3] = endwp;
 
-            double distance = startwp.distanceTo(endwp);
-            double gplength = distance / 2 * tightness;
-            Vector startOffset = Vector.PolarPoint(gplength, startwp.heading);
-            Vector endOffset = Vector.PolarPoint(-gplength, endwp.heading);
-            points[1] = startwp.offsetCartesian(startOffset.x, startOffset.y).toVector();
-            points[2] = endwp.offsetCartesian(endOffset.x, endOffset.y).toVector();
+            points[1] = startwp.offsetCartesian(Math.cos(startwp.heading) * scale / 3, Math.sin(startwp.heading) * scale / 3);
+            points[2] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale / 3, Math.sin(-endwp.heading) * scale / 3);
 
             return new CubicBezierSegment(points);
         }

@@ -2,6 +2,7 @@ package gen;
 
 import gen.segments.CubicBezierSegment.CubicBezierSegmentFactory;
 import gen.segments.CubicHermiteSegment.CubicHermiteSegmentFactory;
+import gen.segments.QuinticBezierSegment.QuinticBezierSegmentFactory;
 import gen.segments.QuinticHermiteSegment.QuinticHermiteSegmentFactory;
 
 /**
@@ -42,11 +43,14 @@ public class Trajectory {
 	public Trajectory(FitMethod method, int sampleRate, double tightness, double dt, double wheelBaseWidth, double maxVelocity, double maxAcceleration, double maxJerk, Waypoint... waypoints) {
 		this.method = method;
 		switch(method) {
+			case CUBIC_BEZIER:
+				spline = new Spline(tightness, new CubicBezierSegmentFactory(), waypoints);
+				break;
 			case QUINTIC_HERMITE:
 				spline = new Spline(tightness, new QuinticHermiteSegmentFactory(), waypoints);
 				break;
-			case CUBIC_BEZIER:
-				spline = new Spline(tightness, new CubicBezierSegmentFactory(), waypoints);
+			case QUINTIC_BEZIER:
+				spline = new Spline(tightness, new QuinticBezierSegmentFactory(), waypoints);
 				break;
 			default:
 				spline = new Spline(tightness, new CubicHermiteSegmentFactory(), waypoints);
@@ -220,7 +224,7 @@ public class Trajectory {
 	public enum FitMethod {
 
 		CUBIC_BEZIER("cubic bezier"), CUBIC_HERMITE("cubic hermite"),
-		QUINTIC_HERMITE("quintic hermite");
+		QUINTIC_HERMITE("quintic hermite"), QUINTIC_BEZIER("quintic bezier");
 
 		private String method;
 
