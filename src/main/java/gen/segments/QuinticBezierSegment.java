@@ -35,11 +35,11 @@ public class QuinticBezierSegment extends Segment {
             points[0] = startwp;
             points[5] = endwp;
 
-            points[1] = startwp.offsetCartesian(Math.cos(startwp.heading) * scale * 0.2, Math.sin(startwp.heading) * scale * 0.2);
-            points[4] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale * 0.2, Math.sin(-endwp.heading) * scale * 0.2);
+            points[1] = startwp.offset(Math.cos(startwp.heading) * scale * 0.2, Math.sin(startwp.heading) * scale * 0.2).toVector();
+            points[4] = endwp.offset(Math.cos(-endwp.heading) * scale * 0.2, Math.sin(-endwp.heading) * scale * 0.2).toVector();
 
-            points[2] = startwp.offsetCartesian( Math.cos(startwp.heading) * scale * 0.4, Math.sin(startwp.heading) * scale * 0.4);
-            points[3] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale * 0.4, Math.sin(-endwp.heading) * scale * 0.4);
+            points[2] = startwp.offset( Math.cos(startwp.heading) * scale * 0.4, Math.sin(startwp.heading) * scale * 0.4).toVector();
+            points[3] = endwp.offset(Math.cos(-endwp.heading) * scale * 0.4, Math.sin(-endwp.heading) * scale * 0.4).toVector();
 
             return new QuinticBezierSegment(points);
         }

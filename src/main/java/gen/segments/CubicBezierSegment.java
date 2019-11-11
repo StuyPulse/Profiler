@@ -35,8 +35,8 @@ public class CubicBezierSegment extends Segment {
             points[0] = startwp;
             points[3] = endwp;
 
-            points[1] = startwp.offsetCartesian(Math.cos(startwp.heading) * scale / 3, Math.sin(startwp.heading) * scale / 3);
-            points[2] = endwp.offsetCartesian(Math.cos(-endwp.heading) * scale / 3, Math.sin(-endwp.heading) * scale / 3);
+            points[1] = startwp.offset(Math.cos(startwp.heading) * scale / 3, Math.sin(startwp.heading) * scale / 3).toVector();
+            points[2] = endwp.offset(Math.cos(-endwp.heading) * scale / 3, Math.sin(-endwp.heading) * scale / 3).toVector();
 
             return new CubicBezierSegment(points);
         }

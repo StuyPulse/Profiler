@@ -9,14 +9,20 @@ public class Vector implements Cloneable {
         this.y = y;
     }
 
-    public static Vector PolarPoint(double distance, double rotation) {
-        double x = Math.cos(rotation) * distance;
-        double y = Math.sin(rotation) * distance;
-        return new Vector(x, y);
-    }
-
     public double distanceTo(Vector that) {
         return Math.sqrt((this.x - that.x) * (this.x - that.x) + (this.y - that.y) * (this.y - that.y));
+    }
+
+    public Vector offset(double xOffset, double yOffset) {
+        return new Vector(xOffset, yOffset);
+    }
+
+    public Vector offset(Vector v) {
+        return offset(v.x, v.y);
+    }
+
+    public Vector multiply(double n) {
+        return new Vector(x * n, y * n);
     }
 
     @Override

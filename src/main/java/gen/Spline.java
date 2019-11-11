@@ -122,6 +122,18 @@ public class Spline {
     }
 
     /**
+     * @param alpha point on spline to offset
+     * @param dist distance to offset by
+     * @param theta direction in which to offset
+     * @return offset waypoint
+     */
+    public Waypoint offsetWaypoint(double alpha, double dist, double theta) {
+        Waypoint temp = getWaypoint(alpha);
+        Vector length = temp.rotate(theta).direction().multiply(dist);
+        return temp.offset(length);
+    }
+
+    /**
      * @return the amount of segments in the curve.
      */
     public int size() {

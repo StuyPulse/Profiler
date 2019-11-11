@@ -41,15 +41,40 @@ public class Waypoint extends Vector {
 	/**
 	 * @param xOffset how much you want to offset the x component by.
 	 * @param yOffset how much you want to offset the y component by.
-	 * @return a new waypoint that has been offsetted.
+	 * @return offset waypoint.
 	 */
-	public Waypoint offsetCartesian(double xOffset, double yOffset) {
+	@Override
+	public Waypoint offset(double xOffset, double yOffset) {
 		return new Waypoint(x + xOffset, y + yOffset, heading);
+	}
+
+	/**
+	 * @param v offset as a vector
+	 * @return offset waypoint
+	 */
+	@Override
+	public Waypoint offset(Vector v) {
+		return offset(v.x, v.y);
+	}
+
+	/**
+	 * @param theta angle in radians to rotate by
+	 * @return rotated waypoint
+	 */
+	public Waypoint rotate(double theta) {
+		return new Waypoint(x, y, heading + theta);
 	}
 
 	/** Converts a waypoint into a vector. */
 	public Vector toVector() {
 		return new Vector(x, y);
+	}
+
+	/**
+	 * @return heading as a vector
+	 */
+	public Vector direction() {
+		return new Vector(Math.cos(heading), Math.sin(heading));
 	}
 
 	@Override
