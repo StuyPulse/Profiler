@@ -1,7 +1,8 @@
 package main;
 
+import gen.SideTrajectory;
 import io.CSV;
-import gen.Trajectory;
+import gen.CenterTrajectory;
 import gen.Waypoint;
 import io.JSON;
 import javafx.fxml.FXML;
@@ -42,7 +43,8 @@ public class Gui {
     public Button save = null;
     public Button load = null;
 
-    private Trajectory trajectory;
+    private CenterTrajectory center;
+    private SideTrajectory left, right;
 
     private void makeTraj() {
         Waypoint[] waypoints = new Waypoint[x.getItems().size()];
@@ -51,18 +53,29 @@ public class Gui {
                     Double.parseDouble(y.getItems().get(i)),
                     Math.toRadians(Double.parseDouble(h.getItems().get(i))));
         }
-        int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
-        trajectory = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, Double.parseDouble(tightness.getText()),
-                Double.parseDouble(dt.getText()), Double.parseDouble(width.getText()),
+        //int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
+        int rate = 100;
+        center = new CenterTrajectory(CenterTrajectory.FitMethod.findMethod(spline.getValue()), rate, Double.parseDouble(tightness.getText()), Double.parseDouble(dt.getText()),
                 Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
                 waypoints);
-        trajectory.generate();
+        left = center.getLeft(Double.parseDouble(width.getText()) / 2);
+        right = center.getRight(Double.parseDouble(width.getText()) / 2);
     }
 
     private String getDateTimeString() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMddyyyy_HHmmss");
         LocalDateTime now = LocalDateTime.now();
         return dtf.format(now);
+    }
+
+    private String getFilePath(File file) {
+        String name = file.getPath();
+        return name.substring(0, name.lastIndexOf('.'));
+    }
+
+    private String getFileExtension(File file) {
+        String name = file.getName();
+        return name.substring(name.lastIndexOf('.'));
     }
 
     private void addPoint (double x, double y, double h) {
@@ -128,9 +141,13 @@ public class Gui {
         chooser.setInitialFileName(getDateTimeString() + ".csv");
         File file = chooser.showSaveDialog(new Stage());
 
+        String name = getFilePath(file);
+        String ext = getFileExtension(file);
         try {
             makeTraj();
-            CSV.exportCSV(file, trajectory);
+            CSV.exportCSV(new File(name + "_center" + ext), center);
+            CSV.exportCSV(new File(name + "_left" + ext), left);
+            CSV.exportCSV(new File(name + "_right" + ext), right);
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");
         }
@@ -143,7 +160,7 @@ public class Gui {
         chooser.setInitialFileName(getDateTimeString() + ".json");
         File file = chooser.showSaveDialog(new Stage());
         makeTraj();
-        JSON.save(trajectory, file);
+        JSON.save(center, file);
     }
 
     @FXML
@@ -151,15 +168,14 @@ public class Gui {
         FileChooser chooser = new FileChooser();
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("javascript object notation", "*.json"));
         File file = chooser.showOpenDialog(new Stage());
-        spline.setValue(trajectory.method.toString());
-        trajectory = JSON.load(file);
-        dt.setText(Double.toString(trajectory.dt));
-        velocity.setText(Double.toString(trajectory.maxVelocity));
-        acceleration.setText(Double.toString(trajectory.maxAcceleration));
-        jerk.setText(Double.toString(trajectory.maxJerk));
-        width.setText(Double.toString(trajectory.wheelBaseWidth));
-        tightness.setText(Double.toString(trajectory.spline.tightness));
-        for(Waypoint w : trajectory.spline.getControlPoints()) {
+        spline.setValue(center.method.toString());
+        center = JSON.load(file);
+        dt.setText(Double.toString(center.dt));
+        velocity.setText(Double.toString(center.maxVelocity));
+        acceleration.setText(Double.toString(center.maxAcceleration));
+        jerk.setText(Double.toString(center.maxJerk));
+        tightness.setText(Double.toString(center.spline.tightness));
+        for(Waypoint w : center.spline.getControlPoints()) {
             addPoint(w.x, w.y, w.heading);
         }
     }
@@ -205,7 +221,7 @@ public class Gui {
         y.setCellFactory(TextFieldListCell.forListView(converter));
         h.setCellFactory(TextFieldListCell.forListView(converter));
 
-        trajectory = null;
+        center = null;
     }
 
 }

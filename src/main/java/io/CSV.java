@@ -1,7 +1,6 @@
 package io;
 
 import gen.Trajectory;
-import gen.Vector;
 import gen.Waypoint;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -52,7 +51,7 @@ public class CSV {
                 printer.printRecord(pt.time, pt.x, pt.y, pt.distanceFromStart, pt.velocity, pt.acceleration, pt.jerk, Math.toDegrees(pt.heading));
             }
             printer.close();
-        } catch (IOException io) {
+       } catch (IOException io) {
             System.out.println("invalid file!");
         }
     }

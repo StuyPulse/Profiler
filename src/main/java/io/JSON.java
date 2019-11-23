@@ -1,6 +1,6 @@
 package io;
 
-import gen.Trajectory;
+import gen.CenterTrajectory;
 import gen.Waypoint;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
@@ -13,12 +13,12 @@ import java.io.FileWriter;
 
 public class JSON {
 
-    public static void save(Trajectory traj, File file) {
+    public static void save(CenterTrajectory traj, File file) {
         try (FileWriter writer = new FileWriter(file)) {
             JSONObject root = new JSONObject();
             root.put("spline", traj.method.toString());
             root.put("dt", traj.dt);
-            root.put("width", traj.wheelBaseWidth);
+            //root.put("width", traj.wheelBaseWidth);
             root.put("velocity", traj.maxVelocity);
             root.put("acceleration", traj.maxAcceleration);
             root.put("jerk", traj.maxJerk);
@@ -39,16 +39,16 @@ public class JSON {
         }
     }
 
-    public static Trajectory load(File file) {
+    public static CenterTrajectory load(File file) {
         String ext = FilenameUtils.getExtension(file.getName());
         if (ext.toLowerCase().equals("json")) {
             throw new IllegalArgumentException("Not a json file");
         }
-        Trajectory traj = null;
+        CenterTrajectory traj = null;
         try (FileReader reader = new FileReader(file)) {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(reader);
-            Trajectory.FitMethod method = Trajectory.FitMethod.findMethod((String) root.get("spline"));
+            CenterTrajectory.FitMethod method = CenterTrajectory.FitMethod.findMethod((String) root.get("spline"));
             double dt = Double.parseDouble((String) root.get("dt"));
             double width = Double.parseDouble((String) root.get("width"));
             double velocity = Double.parseDouble((String) root.get("velocity"));
@@ -64,8 +64,8 @@ public class JSON {
                 double h = Double.parseDouble((String) jp.get(2));
                 waypoints[i] = new Waypoint(x, y, h);
             }
-            int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
-            traj = new Trajectory(method, rate, tightness, dt, width, velocity, acceleration, jerk, waypoints);
+            int rate = CenterTrajectory.SampleRate.valueOf("HIGH").getRate();
+            //traj = new CenterTrajectory(method, rate, tightness, dt, width, velocity, acceleration, jerk, waypoints);
         } catch (Exception e) {
             e.printStackTrace();
         }
