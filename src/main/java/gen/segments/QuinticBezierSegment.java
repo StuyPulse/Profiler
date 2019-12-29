@@ -80,7 +80,7 @@ public class QuinticBezierSegment extends Segment {
      *         and y components of the derivative at that point.
      */
     @Override
-    public Vector differentiateVector(double alpha) {
+    public Vector differentiate(double alpha) {
         // uses equation for bezier derivatives: Σi=0,n Bn-1,i(t) * n * (Pi+1 - pi)
         // https://pomax.github.io/bezierinfo/#derivatives
         double f0 = Math.pow(1 - alpha, 4);
@@ -97,6 +97,23 @@ public class QuinticBezierSegment extends Segment {
         return new Vector(dx, dy);
     }
 
+    @Override
+    public Vector differentiateS(double alpha) {
+        double f0 = Math.pow(1 - alpha, 3);
+        double f1 = 3 * alpha * Math.pow(1 - alpha, 2);
+        double f2 = 3 * Math.pow(alpha, 2) * (1 - alpha);
+        double f3 = Math.pow(alpha, 3);
+        double ddx = 20 * (points[2].x - 2*points[1].x + points[0].x) * f0 +
+                    20 * (points[3].x - 2*points[2].x + points[1].x) * f1 +
+                    20 * (points[4].x - 2*points[3].x + points[2].x) * f2 +
+                    20 * (points[5].x - 2*points[4].x + points[3].x) * f3;
+        double ddy = 20 * (points[2].y - 2*points[1].y + points[0].y) * f0 +
+                20 * (points[3].y - 2*points[2].y + points[1].y) * f1 +
+                20 * (points[4].y - 2*points[3].y + points[2].y) * f2 +
+                20 * (points[5].y - 2*points[4].y + points[3].y) * f3;
+        return new Vector(ddx, ddy);
+    }
+
     /**
      * @param from a point on the curve.
      * @param to another point on the curve.
@@ -111,7 +128,7 @@ public class QuinticBezierSegment extends Segment {
         double sum = 0;
         for (int i = 0; i < 3; i++) {
             double transformedPt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
-            Vector d = differentiateVector(transformedPt);
+            Vector d = differentiate(transformedPt);
             sum += WEIGHTS[i] * Math.sqrt(d.x * d.x + d.y * d.y);
         }
         return ((to - from) / 2.0) * sum;

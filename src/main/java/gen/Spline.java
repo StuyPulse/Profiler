@@ -69,7 +69,7 @@ public class Spline {
 
     /**
      * @param alpha progression on spline [0, 1].
-     * Returns a position (in vector form) on the curve.
+     * @return position on the curve.
      */
     private Vector getPoint(double alpha) {
         Position pos = findPoint(alpha);
@@ -78,36 +78,36 @@ public class Spline {
 
     /**
      * @param alpha progression on spline [0, 1].
-     * Gets the slope (in vector form) of the point
-     * corresponding to the alpha value.
+     * @return heading at points in radians.
      */
-    public Vector headingVector(double alpha) {
+    public double getHeading(double alpha) {
         Position pos = findPoint(alpha);
-        return segments[pos.seg].differentiateVector(pos.alpha);
+        Vector h = segments[pos.seg].differentiate(pos.alpha);
+        return h.x >= 0 ? Math.atan2(h.y, h.x) : Math.PI + Math.atan2(h.y, h.x);
     }
 
     /**
      * @param alpha progression on the spline [0, 1].
-     * Gets the angle (in radians) of the point
-     * corresponding to the alpha value. */
-    public double headingAngle(double alpha) {
+     * @return angular velocity at that point in angle format.
+     */
+    public double getCurvature(double alpha) {
         Position pos = findPoint(alpha);
-        return segments[pos.seg].differentiateAngle(pos.alpha);
+        return segments[pos.seg].curvature(pos.alpha);
     }
 
-    /**-[
+    /**
      * @param from start progression on curve.
      * @param to end progression on curve.
      * @return arclength from one point to another.
      */
-    public double distance(double from, double to) {
+    public double getDistance(double from, double to) {
         Position fPos = findPoint(from);
         Position tPos = findPoint(to);
-        if (fPos.seg == tPos.seg) {
+        if (fPos.seg == tPos.seg)
             return segments[fPos.seg].integrate(fPos.alpha, tPos.alpha);
-        } else {
-            return segments[fPos.seg].integrate(fPos.alpha, 1.0) + distance(fPos.seg + 1, to);
-        }
+        else
+            return segments[fPos.seg].integrate(fPos.alpha, 1.0) +
+                    getDistance((fPos.seg + 1.0) / segments.length, to);
     }
 
     /**
@@ -115,22 +115,11 @@ public class Spline {
      * @return a waypoint on the curve.
      */
     public Waypoint getWaypoint(double alpha) {
-        Waypoint wp = new Waypoint(getPoint(alpha), headingAngle(alpha));
-        wp.distanceFromStart = distance(0, alpha);
-        wp.distanceFromEnd   = distance(alpha, 1.0);
+        Waypoint wp = new Waypoint(getPoint(alpha), getHeading(alpha));
+        wp.distanceFromStart = getDistance(0, alpha);
+        wp.distanceFromEnd   = getDistance(alpha, 1.0);
+        wp.curvature         = getCurvature(alpha);
         return wp;
-    }
-
-    /**
-     * @param alpha point on spline to offset
-     * @param dist distance to offset by
-     * @param theta direction in which to offset
-     * @return offset waypoint
-     */
-    public Waypoint offsetWaypoint(double alpha, double dist, double theta) {
-        Waypoint temp = getWaypoint(alpha);
-        Vector length = temp.rotate(theta).direction().multiply(dist);
-        return temp.offset(length);
     }
 
     /**

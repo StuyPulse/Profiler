@@ -9,12 +9,16 @@ public class Vector implements Cloneable {
         this.y = y;
     }
 
+    public double magnitude() {
+        return Math.sqrt(x*x + y*y);
+    }
+
     public double distanceTo(Vector that) {
         return Math.sqrt((this.x - that.x) * (this.x - that.x) + (this.y - that.y) * (this.y - that.y));
     }
 
     public Vector offset(double xOffset, double yOffset) {
-        return new Vector(xOffset, yOffset);
+        return new Vector(x + xOffset, y + yOffset);
     }
 
     public Vector offset(Vector v) {
@@ -23,6 +27,10 @@ public class Vector implements Cloneable {
 
     public Vector multiply(double n) {
         return new Vector(x * n, y * n);
+    }
+
+    public Vector normalize() {
+        return new Vector(x / magnitude(), y / magnitude());
     }
 
     @Override

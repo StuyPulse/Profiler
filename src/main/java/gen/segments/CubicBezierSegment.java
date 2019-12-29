@@ -58,10 +58,14 @@ public class CubicBezierSegment extends Segment {
      */
     @Override
     public Vector getCors(double alpha) {
-        double x = points[0].x * Math.pow(1 - alpha, 3) + points[1].x * 3 * Math.pow(1 - alpha, 2) * alpha +
-                points[2].x * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].x * Math.pow(alpha, 3);
-        double y = points[0].y * Math.pow(1 - alpha, 3) + points[1].y * 3 * Math.pow(1 - alpha, 2) * alpha +
-                points[2].y * 3 * (1 - alpha) * Math.pow(alpha, 2) + points[3].y * Math.pow(alpha, 3);
+        double h0 = Math.pow(1 - alpha, 3);
+        double h1 = 3 * Math.pow(1 - alpha, 2) * alpha;
+        double h2 = 3 * (1 - alpha) * Math.pow(alpha, 2);
+        double h3 = Math.pow(alpha, 3);
+        double x = points[0].x * h0 + points[1].x * h1 +
+                points[2].x * h2 + points[3].x * h3;
+        double y = points[0].y * h0 + points[1].y * h1 +
+                points[2].y * h2 + points[3].y * h3;
         Vector point = new Vector(x, y);
         return point;
     }
@@ -73,16 +77,30 @@ public class CubicBezierSegment extends Segment {
      *         and y components of the derivative at that point.
      */
     @Override
-    public Vector differentiateVector(double alpha) {
+    public Vector differentiate(double alpha) {
         // uses equation for bezier derivatives: Σi=0,n Bn-1,i(t) * n * (Pi+1 - pi)
         // https://pomax.github.io/bezierinfo/#derivatives
-        double dx = 3 * Math.pow(1 - alpha, 2) * (points[1].x - points[0].x) +
-                6 * alpha * (1 - alpha) * (points[2].x - points[1].x) +
-                3 * Math.pow(alpha, 2) * (points[3].x - points[2].x);
-        double dy = 3 * Math.pow(1 - alpha, 2) * (points[1].y - points[0].y) +
-                6 * alpha * (1 - alpha) * (points[2].y - points[1].y) +
-                3 * Math.pow(alpha, 2) * (points[3].y - points[2].y);
+        double dh0 = Math.pow(1 - alpha, 2);
+        double dh1 = 2 * (1- alpha) * alpha;
+        double dh2 = Math.pow(alpha, 2);
+        double dx = 3 * (points[1].x - points[0].x) * dh0 +
+                3 * (points[2].x - points[1].x) * dh1 +
+                3 * (points[3].x - points[2].x) * dh2;
+        double dy = 3 * (points[1].y - points[0].y) * dh0 +
+                3 * (points[2].y - points[1].y) * dh1 +
+                3 * (points[3].y - points[2].y) * dh2;
         return new Vector(dx, dy);
+    }
+
+    @Override
+    public Vector differentiateS(double alpha) {
+        double ddh0 = 1 - alpha;
+        double ddh1 = alpha;
+        double ddx = 6 * (points[2].x - 2*points[1].x + points[0].x) * ddh0 +
+                    6 * (points[3].x - 2*points[2].x + points[1].x) * ddh1;
+        double ddy = 6 * (points[2].y - 2*points[1].y + points[0].y) * ddh0 +
+                6 * (points[3].y - 2*points[2].y + points[1].y) * ddh1;
+        return new Vector(ddx, ddy);
     }
 
     /**
@@ -95,13 +113,13 @@ public class CubicBezierSegment extends Segment {
         // uses 2 point Gauss Quadrature method to approximate arc length: ∫a,b f(x)dx = Σi=0,n Ci*f(xi)
         // https://pomax.github.io/bezierinfo/#arclength
         // https://www.youtube.com/watch?v=unWguclP-Ds&feature=BFa&list=PLC8FC40C714F5E60F&index=1
-        // values found here: https://pomax.github.io/bezierinfo/legendre-gauss.html
+        // values : https://pomax.github.io/bezierinfo/legendre-gauss.html
         final double[] WEIGHTS = {1.0000000000000000, 1.0000000000000000};
         final double[] ABSCISSA = {-0.5773502691896257, 0.5773502691896257};
         double sum = 0;
         for(int i = 0; i < 2; i++) {
             double pt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
-            Vector d = differentiateVector(pt);
+            Vector d = differentiate(pt);
             sum += WEIGHTS[i] * Math.sqrt(d.x*d.x + d.y*d.y);
         }
         return ((to - from) / 2.0) * sum;

@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,11 +44,11 @@ public class CSV {
         return null;
     }
 
-    public static void exportCSV(File file, Trajectory trajectory) {
+    public static void exportCSV(File file, ArrayList<Waypoint> points) {
         try {
             CSVPrinter printer = new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT);
             printer.printRecord("time", "x", "y", "distance", "velocity", "acceleration", "jerk", "heading");
-            for (Waypoint pt : trajectory.getPoints()) {
+            for (Waypoint pt : points) {
                 printer.printRecord(pt.time, pt.x, pt.y, pt.distanceFromStart, pt.velocity, pt.acceleration, pt.jerk, Math.toDegrees(pt.heading));
             }
             printer.close();

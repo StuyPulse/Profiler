@@ -1,8 +1,8 @@
 package main;
 
-import gen.SideTrajectory;
+import gen.modifiers.TankModifier;
 import io.CSV;
-import gen.CenterTrajectory;
+import gen.Trajectory;
 import gen.Waypoint;
 import io.JSON;
 import javafx.fxml.FXML;
@@ -43,8 +43,8 @@ public class Gui {
     public Button save = null;
     public Button load = null;
 
-    private CenterTrajectory center;
-    private SideTrajectory left, right;
+    private Trajectory center;
+    private TankModifier tank;
 
     private void makeTraj() {
         Waypoint[] waypoints = new Waypoint[x.getItems().size()];
@@ -53,13 +53,11 @@ public class Gui {
                     Double.parseDouble(y.getItems().get(i)),
                     Math.toRadians(Double.parseDouble(h.getItems().get(i))));
         }
-        //int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
-        int rate = 100;
-        center = new CenterTrajectory(CenterTrajectory.FitMethod.findMethod(spline.getValue()), rate, Double.parseDouble(tightness.getText()), Double.parseDouble(dt.getText()),
+        int rate = Trajectory.SampleRate.valueOf("HIGH").getRate();
+        center = new Trajectory(Trajectory.FitMethod.findMethod(spline.getValue()), rate, Double.parseDouble(tightness.getText()), Double.parseDouble(dt.getText()),
                 Double.parseDouble(velocity.getText()), Double.parseDouble(acceleration.getText()), Double.parseDouble(jerk.getText()),
                 waypoints);
-        left = center.getLeft(Double.parseDouble(width.getText()) / 2);
-        right = center.getRight(Double.parseDouble(width.getText()) / 2);
+        tank = new TankModifier(center, Double.parseDouble(width.getText()) / 2.0);
     }
 
     private String getDateTimeString() {
@@ -145,9 +143,9 @@ public class Gui {
         String ext = getFileExtension(file);
         try {
             makeTraj();
-            CSV.exportCSV(new File(name + "_center" + ext), center);
-            CSV.exportCSV(new File(name + "_left" + ext), left);
-            CSV.exportCSV(new File(name + "_right" + ext), right);
+            CSV.exportCSV(new File(name + "_center" + ext), center.getPoints());
+            CSV.exportCSV(new File(name + "_left" + ext), tank.getLeft());
+            CSV.exportCSV(new File(name + "_right" + ext), tank.getRight());
         }catch(NumberFormatException n) {
             System.out.println("not a number!!!");
         }

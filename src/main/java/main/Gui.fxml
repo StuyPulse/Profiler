@@ -82,7 +82,7 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="tightness" prefHeight="31.0" prefWidth="80.0" text="0.8" />
+                  <TextField fx:id="tightness" prefHeight="31.0" prefWidth="80.0" text="1.2" />
                </children>
             </HBox>
          </children>

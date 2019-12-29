@@ -18,6 +18,7 @@ public class Waypoint extends Vector {
 				  jerk;
 	/** Direction of the waypoint, it is counterclockwise and in radians */
 	public double heading;
+	public double curvature;
 
 	/**
 	 * @param x the x component (vector form).

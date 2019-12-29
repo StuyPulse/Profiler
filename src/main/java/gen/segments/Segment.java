@@ -3,8 +3,6 @@ package gen.segments;
 import gen.Vector;
 import gen.Waypoint;
 
-import java.util.Objects;
-
 /**
  * Spline.java
  *
@@ -38,6 +36,15 @@ public abstract class Segment {
     public final Vector[] points;
 
     /**
+     * @param angle to bound
+     * @return equivalent angle between -180 to 180
+     */
+    private double boundToHalfRev(double angle) {
+        if(angle <= Math.PI) return angle;
+        else                 return angle - 2*Math.PI;
+    }
+
+    /**
      * @param n Order of spline
      * @param points Points used to define spline
      */
@@ -62,21 +69,18 @@ public abstract class Segment {
     /**
      * @param alpha spline parameter from [0, 1]
      *              indicates progression on curve.
-     * @return derivative (slope) at point as (x, y) vector
+     * @return first derivative (slope) at point
+     *              as (x, y) vector.
      */
-    public abstract Vector differentiateVector(double alpha);
+    public abstract Vector differentiate(double alpha);
 
     /**
      * @param alpha spline parameter from [0, 1]
      *              indicates progression on curve.
-     * @return derivative (slope) at points as angle (heading)
+     * @return second derivative (slope of slope)
+     *              as (x, y) vector.
      */
-    public double differentiateAngle(double alpha) {
-        Vector d = differentiateVector(alpha);
-        double h = Math.atan2(d.y, d.x);
-        h = (2 * Math.PI + h) % (2 * Math.PI);
-        return h;
-    }
+    public abstract Vector differentiateS(double alpha);
 
     /**
      * @param from point on curve.
@@ -84,6 +88,19 @@ public abstract class Segment {
      * @return arc length distance between points.
      */
     public abstract double integrate(double from, double to);
+
+    /**
+     * @param alpha spline parameter from [0, 1]
+     *              indicates progression on curve.
+     * @return curvature (k) indicating smoothness of path.
+     *          same as angular velocity (w).
+     */
+    public double curvature(double alpha) {
+        Vector d = differentiate(alpha);
+        Vector dd = differentiateS(alpha);
+        // k = ( x'(t)*y''(t) - y'(t)*x''(t) ) / (x'(t)^2 + y'(t)^2)^1.5
+        return (d.x*dd.y - d.y*dd.x) / ( (d.x*d.x + d.y*d.y) * Math.sqrt(d.x*d.x + d.y*d.y) );
+    }
 
     /**
      * @return a string representing all the points of the curve.

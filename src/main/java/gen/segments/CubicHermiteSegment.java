@@ -61,14 +61,14 @@ public class CubicHermiteSegment extends Segment {
      */
     @Override
     public Vector getCors(double alpha) {
-        double h1 = 2 * Math.pow(alpha, 3) - 3 * Math.pow(alpha, 2) + 1;
-        double h2 = -2 * Math.pow(alpha, 3) + 3 * Math.pow(alpha, 2);
-        double h3 = Math.pow(alpha, 3) - 2 * Math.pow(alpha, 2) + alpha;
-        double h4 = Math.pow(alpha, 3) - Math.pow(alpha, 2);
-        double x = points[0].x * h1 + points[1].x * h2 +
-                points[2].x * h3 + points[3].x * h4;
-        double y = points[0].y * h1 + points[1].y * h2 +
-                points[2].y * h3 + points[3].y * h4;
+        double h0 = 2 * Math.pow(alpha, 3) - 3 * Math.pow(alpha, 2) + 1;
+        double h1 = -2 * Math.pow(alpha, 3) + 3 * Math.pow(alpha, 2);
+        double h2 = Math.pow(alpha, 3) - 2 * Math.pow(alpha, 2) + alpha;
+        double h3 = Math.pow(alpha, 3) - Math.pow(alpha, 2);
+        double x = points[0].x * h0 + points[1].x * h1 +
+                points[2].x * h2 + points[3].x * h3;
+        double y = points[0].y * h0 + points[1].y * h1 +
+                points[2].y * h2 + points[3].y * h3;
         Vector point = new Vector(x, y);
         return point;
     }
@@ -80,17 +80,30 @@ public class CubicHermiteSegment extends Segment {
      *         and y components of the derivative at that point.
      */
     @Override
-    public Vector differentiateVector(double alpha) {
+    public Vector differentiate(double alpha) {
         // f'(x) = 3at^2 + 2b + c (using the power rule)
-        double h1 = 6 * Math.pow(alpha, 2) - 6 * alpha;
-        double h2 = -6 * Math.pow(alpha, 2) + 6 * alpha;
-        double h3 = 3 * Math.pow(alpha, 2) - 4 * alpha + 1;
-        double h4 = 3 * Math.pow(alpha, 2) - 2 * alpha;
-        double dx = points[0].x * h1 + points[1].x * h2 +
-                points[2].x * h3 + points[3].x * h4;
-        double dy = points[0].y * h1 + points[1].y * h2 +
-                points[2].y * h3 + points[3].y * h4;
+        double dh0 = 6 * Math.pow(alpha, 2) - 6 * alpha;
+        double dh1 = -6 * Math.pow(alpha, 2) + 6 * alpha;
+        double dh2 = 3 * Math.pow(alpha, 2) - 4 * alpha + 1;
+        double dh3 = 3 * Math.pow(alpha, 2) - 2 * alpha;
+        double dx = points[0].x * dh0 + points[1].x * dh1 +
+                points[2].x * dh2 + points[3].x * dh3;
+        double dy = points[0].y * dh0 + points[1].y * dh1 +
+                points[2].y * dh2 + points[3].y * dh3;
         return new Vector(dx, dy);
+    }
+
+    @Override
+    public Vector differentiateS(double alpha) {
+        double ddh0 = 12 * alpha - 6;
+        double ddh1 = -12 * alpha + 6;
+        double ddh2 = 6 * alpha - 4;
+        double ddh3 = 6 * alpha - 2;
+        double ddx = points[0].x * ddh0 + points[1].x * ddh1 +
+                    points[2].x * ddh2 + points[3].x * ddh3;
+        double ddy = points[0].y * ddh0 + points[1].y * ddh1 +
+                points[2].y * ddh2 + points[3].y * ddh3;
+        return new Vector(ddx, ddy);
     }
 
     /**
@@ -109,7 +122,7 @@ public class CubicHermiteSegment extends Segment {
         double sum = 0;
         for(int i = 0; i < 2; i++) {
             double pt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
-            Vector d = differentiateVector(pt);
+            Vector d = differentiate(pt);
             sum += WEIGHTS[i] * Math.sqrt(d.x*d.x + d.y*d.y);
 
         }

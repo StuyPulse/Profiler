@@ -88,7 +88,7 @@ public class QuinticHermiteSegment extends Segment {
      *         and y components of the derivative at that point.
      */
     @Override
-    public Vector differentiateVector(double alpha) {
+    public Vector differentiate(double alpha) {
         double p0 = -30 * Math.pow(alpha, 2) + 60 * Math.pow(alpha, 3) -
                 30 * Math.pow(alpha, 4);
         double p1 = 30 * Math.pow(alpha, 2) - 60 * Math.pow(alpha, 3) +
@@ -112,6 +112,31 @@ public class QuinticHermiteSegment extends Segment {
         return d;
     }
 
+    @Override
+    public Vector differentiateS(double alpha) {
+        double p0 = -60 * alpha + 180 * Math.pow(alpha, 2) -
+                120 * Math.pow(alpha, 3);
+        double p1 = 60 * alpha - 180 * Math.pow(alpha, 2) +
+                120 * Math.pow(alpha, 3);
+        double dp0 = -36 * alpha + 96 * Math.pow(alpha, 2) -
+                60 * Math.pow(alpha, 3);
+        double dp1 = -24 * alpha + 84 * Math.pow(alpha, 2) -
+                60 * Math.pow(alpha, 3);
+        double ddp0 = -9 * alpha + 18 * Math.pow(alpha, 2) -
+                10 * Math.pow(alpha, 3);
+        double ddp1 = 3 * alpha - 12 * Math.pow(alpha, 2) +
+                10 * Math.pow(alpha, 3);
+
+        double ddx = points[0].x * p0 + points[1].x * p1 + points[2].x * dp0 +
+                points[3].x * dp1 + points[4].x * ddp0 + points[5].x * ddp1;
+
+        double ddy = points[0].y * p0 + points[1].y * p1 + points[2].y * dp0 +
+                points[3].y * dp1 + points[4].y * ddp0 + points[5].y * ddp1;
+
+        Vector dd = new Vector(ddx, ddy);
+        return dd;
+    }
+
     /**
      * @param from a point on the curve.
      * @param to another point on the curve.
@@ -126,7 +151,7 @@ public class QuinticHermiteSegment extends Segment {
         double sum = 0;
         for (int i = 0; i < 3; i++) {
             double transformedPt = ((to - from) / 2.0) * ABSCISSA[i] + ((to + from) / 2.0);
-            Vector d = differentiateVector(transformedPt);
+            Vector d = differentiate(transformedPt);
             sum += WEIGHTS[i] * Math.sqrt(d.x * d.x + d.y * d.y);
         }
         return ((to - from) / 2.0) * sum;
