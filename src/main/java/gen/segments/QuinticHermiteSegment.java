@@ -112,6 +112,12 @@ public class QuinticHermiteSegment extends Segment {
         return d;
     }
 
+    /**
+     * @param alpha spline parameter from [0, 1]
+     *              indicates progression on curve.
+     * @return second derivative (slope of slope)
+     *              as (x, y) vector.
+     */
     @Override
     public Vector differentiateS(double alpha) {
         double p0 = -60 * alpha + 180 * Math.pow(alpha, 2) -

@@ -63,7 +63,7 @@ public class Waypoint extends Vector {
 	 * @return rotated waypoint
 	 */
 	public Waypoint rotate(double theta) {
-		return new Waypoint(x, y, heading + theta);
+		return new Waypoint(x, y, (heading + theta) % (2*Math.PI));
 	}
 
 	/** Converts a waypoint into a vector. */

@@ -36,7 +36,7 @@ public class CubicBezierSegment extends Segment {
             points[3] = endwp;
 
             points[1] = startwp.offset(Math.cos(startwp.heading) * scale / 3, Math.sin(startwp.heading) * scale / 3).toVector();
-            points[2] = endwp.offset(Math.cos(-endwp.heading) * scale / 3, Math.sin(-endwp.heading) * scale / 3).toVector();
+            points[2] = endwp.offset(Math.cos(endwp.rotate(Math.PI).heading) * scale / 3, Math.sin(endwp.rotate(Math.PI).heading) * scale / 3).toVector();
 
             return new CubicBezierSegment(points);
         }
@@ -92,6 +92,12 @@ public class CubicBezierSegment extends Segment {
         return new Vector(dx, dy);
     }
 
+    /**
+     * @param alpha spline parameter from [0, 1]
+     *              indicates progression on curve.
+     * @return second derivative (slope of slope)
+     *              as (x, y) vector.
+     */
     @Override
     public Vector differentiateS(double alpha) {
         double ddh0 = 1 - alpha;

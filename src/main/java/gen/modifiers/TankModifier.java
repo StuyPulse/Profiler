@@ -34,14 +34,14 @@ public class TankModifier extends Modifier {
     private void genLeft() {
         left = new ArrayList<>();
         double total_dist = 0;
-        double total_time = 0;
         Waypoint last = null;
         for(Waypoint w : original.getPoints()) {
             Vector length = w.rotate(Math.PI / 2).direction().multiply(offset);
             Waypoint next = w.offset(length);
 
-            double dd = last == null ? 0 : next.distanceTo(last);
-            total_dist += dd;
+            next.time = w.time;
+
+            total_dist += last == null ? 0 : next.distanceTo(last);
             next.distanceFromStart = total_dist;
 
             /*
@@ -50,12 +50,8 @@ public class TankModifier extends Modifier {
              */
             next.velocity = w.velocity - (w.curvature * offset);
 
-            double dt = last == null ? 0 : 2*dd / (next.velocity + last.velocity);
-            total_time += dt;
-            next.time = total_time;
-
-            next.acceleration = last == null ? 0 : (next.velocity - last.velocity) / dt;
-            next.jerk = last == null ? 0 : (next.acceleration - last.acceleration) / dt;
+            next.acceleration = last == null ? 0 : (next.velocity - last.velocity) / (next.time - last.time);
+            next.jerk = last == null ? 0 : (next.acceleration - last.acceleration) / (next.time - last.time);
 
             left.add(next);
             last = next;
@@ -85,8 +81,9 @@ public class TankModifier extends Modifier {
             Vector length = w.rotate(-Math.PI / 2).direction().multiply(offset);
             Waypoint next = w.offset(length);
 
-            double dd = last == null ? 0 : next.distanceTo(last);
-            total_dist += dd;
+            next.time = w.time;
+
+            total_dist += last == null ? 0 : next.distanceTo(last);
             next.distanceFromStart = total_dist;
 
             /*
@@ -95,12 +92,8 @@ public class TankModifier extends Modifier {
              */
             next.velocity = w.velocity + (w.curvature * offset);
 
-            double dt = last == null ? 0 : 2*dd / (next.velocity + last.velocity);
-            total_time += dt;
-            next.time = total_time;
-
-            next.acceleration = last == null ? 0 : (next.velocity - last.velocity) / dt;
-            next.jerk = last == null ? 0 : (next.acceleration - last.acceleration) / dt;
+            next.acceleration = last == null ? 0 : (next.velocity - last.velocity) / (next.time - last.time);
+            next.jerk = last == null ? 0 : (next.acceleration - last.acceleration) / (next.time - last.time);
 
             right.add(next);
             last = next;

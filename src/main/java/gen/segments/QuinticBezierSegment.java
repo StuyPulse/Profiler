@@ -36,10 +36,10 @@ public class QuinticBezierSegment extends Segment {
             points[5] = endwp;
 
             points[1] = startwp.offset(Math.cos(startwp.heading) * scale * 0.2, Math.sin(startwp.heading) * scale * 0.2).toVector();
-            points[4] = endwp.offset(Math.cos(-endwp.heading) * scale * 0.2, Math.sin(-endwp.heading) * scale * 0.2).toVector();
+            points[4] = endwp.offset(Math.cos(endwp.rotate(Math.PI).heading) * scale * 0.2, Math.sin(endwp.rotate(Math.PI).heading) * scale * 0.2).toVector();
 
             points[2] = startwp.offset( Math.cos(startwp.heading) * scale * 0.4, Math.sin(startwp.heading) * scale * 0.4).toVector();
-            points[3] = endwp.offset(Math.cos(-endwp.heading) * scale * 0.4, Math.sin(-endwp.heading) * scale * 0.4).toVector();
+            points[3] = endwp.offset(Math.cos(endwp.rotate(Math.PI).heading) * scale * 0.4, Math.sin(endwp.rotate(Math.PI).heading) * scale * 0.4).toVector();
 
             return new QuinticBezierSegment(points);
         }
@@ -97,6 +97,12 @@ public class QuinticBezierSegment extends Segment {
         return new Vector(dx, dy);
     }
 
+    /**
+     * @param alpha spline parameter from [0, 1]
+     *              indicates progression on curve.
+     * @return second derivative (slope of slope)
+     *              as (x, y) vector.
+     */
     @Override
     public Vector differentiateS(double alpha) {
         double f0 = Math.pow(1 - alpha, 3);

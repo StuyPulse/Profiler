@@ -126,12 +126,6 @@ public class Trajectory {
 		double totalTime = 0;
 		traj.get(0).time = totalTime;
 		for (int i = 1; i < traj.size(); i++) {
-		    /*
-			double dd = traj.get(i).distanceFromStart - traj.get(i-1).distanceFromStart;
-			double dv = traj.get(i).velocity - traj.get(i-1).velocity;
-			double minVel = Math.min(traj.get(i).velocity, traj.get(i-1).velocity);
-			double dt = dd / (minVel + Math.abs(dv) / 2);
-			*/
 			double dd = traj.get(i).distanceFromStart - traj.get(i-1).distanceFromStart;
 			double dv = (traj.get(i).velocity + traj.get(i-1).velocity) / 2.0;
 			totalTime += dd / dv;

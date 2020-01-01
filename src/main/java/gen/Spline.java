@@ -83,7 +83,7 @@ public class Spline {
     public double getHeading(double alpha) {
         Position pos = findPoint(alpha);
         Vector h = segments[pos.seg].differentiate(pos.alpha);
-        return h.x >= 0 ? Math.atan2(h.y, h.x) : Math.PI + Math.atan2(h.y, h.x);
+        return h.x >= 0 ? Math.atan(h.y / h.x) : Math.PI + Math.atan(h.y / h.x);
     }
 
     /**
